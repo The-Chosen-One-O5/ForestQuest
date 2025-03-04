@@ -425,7 +425,7 @@
             margin-bottom: 1.5rem;
         }
 
-        .signin-box input {
+        .signin-box input[type="text"], .signin-box input[type="password"] {
             margin-bottom: 1rem;
             padding: 0.75rem;
             width: 100%;
@@ -433,6 +433,17 @@
             border-radius: 5px;
             background-color: var(--dark-input-bg);
             color: var(--light-text);
+        }
+
+        .signin-box input[type="checkbox"] {
+            margin-right: 0.5rem;
+            vertical-align: middle;
+        }
+
+        .signin-box label {
+            display: inline-block;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
         }
 
         .signin-box button {
@@ -444,6 +455,11 @@
             color: var(--delete-color);
             margin-top: 1rem;
             display: none;
+        }
+
+        .signout-btn {
+            background-color: var(--delete-color);
+            margin-top: 1rem;
         }
 
         @keyframes levelUpAnim {
@@ -512,6 +528,8 @@
             <h1>Forest Quest<img src="https://i.ytimg.com/vi/eTeBsgG3lkw/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLBsbiZakg7W-jPkhJtBh3mS2zeNrQ" alt="Leaf" class="leaf-icon"></h1>
             <p>Complete tasks, earn coins, level up, and transform your forest!</p>
         </header>
+
+        <button class="signout-btn" id="signout-btn" style="display: none;">Sign Out</button>
 
         <div class="stats">
             <div class="stat">
@@ -679,6 +697,7 @@
             <h2>Sign In</h2>
             <input type="text" id="username" placeholder="Username" required>
             <input type="password" id="password" placeholder="Password" required>
+            <label><input type="checkbox" id="stay-signed-in"> Stay Signed In</label>
             <button id="signin-btn">Sign In</button>
             <p class="signin-error" id="signin-error">Invalid username or password</p>
         </div>
@@ -716,8 +735,10 @@
             const signinBtn = document.getElementById('signin-btn');
             const usernameInput = document.getElementById('username');
             const passwordInput = document.getElementById('password');
+            const staySignedInCheckbox = document.getElementById('stay-signed-in');
             const signinError = document.getElementById('signin-error');
             const mainContent = document.querySelector('.main-content');
+            const signoutBtn = document.getElementById('signout-btn');
 
             const backgroundImages = {
                 0: 'https://assets.grok.com/users/61aa03d5-34a6-451f-a29b-c678af050623/7qqe1265AFQU0oyA-generated_image.jpg',
@@ -730,7 +751,7 @@
 
             let intervalId = null;
 
-            // Sign-In Logic
+            // User Management
             function loadUsers() {
                 const users = localStorage.getItem('forestQuestUsers');
                 return users ? JSON.parse(users) : {};
@@ -740,12 +761,28 @@
                 localStorage.setItem('forestQuestUsers', JSON.stringify(users));
             }
 
-            function signIn(username, password) {
+            function loadSignedInUser() {
+                return localStorage.getItem('signedInUser');
+            }
+
+            function saveSignedInUser(username) {
+                localStorage.setItem('signedInUser', username);
+            }
+
+            function clearSignedInUser() {
+                localStorage.removeItem('signedInUser');
+            }
+
+            function signIn(username, password, staySignedIn) {
                 const users = loadUsers();
                 if (users[username] && users[username].password === password) {
                     currentUser = username;
+                    if (staySignedIn) {
+                        saveSignedInUser(username);
+                    }
                     signinOverlay.style.display = 'none';
                     mainContent.classList.remove('blur');
+                    signoutBtn.style.display = 'block';
                     loadGameState();
                     loadSubjectProgress();
                 } else if (!users[username]) {
@@ -753,8 +790,12 @@
                     users[username] = { password: password };
                     saveUsers(users);
                     currentUser = username;
+                    if (staySignedIn) {
+                        saveSignedInUser(username);
+                    }
                     signinOverlay.style.display = 'none';
                     mainContent.classList.remove('blur');
+                    signoutBtn.style.display = 'block';
                     loadGameState();
                     loadSubjectProgress();
                 } else {
@@ -762,13 +803,31 @@
                 }
             }
 
+            function signOut() {
+                currentUser = null;
+                clearSignedInUser();
+                signoutBtn.style.display = 'none';
+                mainContent.classList.add('blur');
+                signinOverlay.style.display = 'flex';
+                usernameInput.value = '';
+                passwordInput.value = '';
+                staySignedInCheckbox.checked = false;
+                signinError.style.display = 'none';
+                if (intervalId) {
+                    clearInterval(intervalId);
+                }
+            }
+
             signinBtn.addEventListener('click', () => {
                 const username = usernameInput.value.trim();
                 const password = passwordInput.value.trim();
+                const staySignedIn = staySignedInCheckbox.checked;
                 if (username && password) {
-                    signIn(username, password);
+                    signIn(username, password, staySignedIn);
                 }
             });
+
+            signoutBtn.addEventListener('click', signOut);
 
             // Load subject progress from localStorage
             function loadSubjectProgress() {
@@ -1093,8 +1152,18 @@
             deadlineTimeInput.value = '23:59';
 
             // Initial Setup
-            mainContent.classList.add('blur');
-            signinOverlay.style.display = 'flex';
+            const signedInUser = loadSignedInUser();
+            if (signedInUser) {
+                currentUser = signedInUser;
+                signinOverlay.style.display = 'none';
+                mainContent.classList.remove('blur');
+                signoutBtn.style.display = 'block';
+                loadGameState();
+                loadSubjectProgress();
+            } else {
+                mainContent.classList.add('blur');
+                signinOverlay.style.display = 'flex';
+            }
 
             window.addEventListener('beforeunload', () => {
                 if (intervalId) {
