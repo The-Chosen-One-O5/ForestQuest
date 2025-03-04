@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forest Quest - Gamified Productivity</title>
+    <style>
+        :root {
+            --primary-color: #4CAF50;
+            --secondary-color: #388E3C;
+            --accent-color: #FFD700;
+            --light-text: #FFFFFF;
+            --delete-color: #F44336;
+            --task-bg: rgba(40, 40, 40, 0.85);
+            --transition-time: 0.3s;
+            --dark-bg: #1A1A1A;
+            --dark-container: rgba(40, 40, 40, 0.9);
+            --dark-input-bg: #2C2C2C;
+            --overlay: rgba(0, 0, 0, 0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-size: contain;
+            background-position: center;
+            background-attachment: fixed;
+            min-height: 100vh;
+            transition: background-image 1s ease-in-out;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: var(--dark-bg);
+            color: var(--light-text);
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--overlay);
+            z-index: -1;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 1.5rem;
+            background-color: var(--dark-container);
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            color: var(--light-text);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--primary-color);
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .coin-icon {
+            width: 24px;
+            height: 24px;
+            vertical-align: middle;
+            margin-right: 5px;
+        }
+
+        .leaf-icon {
+            width: 30px;
+            height: 30px;
+            vertical-align: middle;
+            margin-left: 10px;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background-color: var(--secondary-color);
+            border-radius: 10px;
+            color: var(--light-text);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat {
+            text-align: center;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-top: 0.5rem;
+        }
+
+        .level-progress {
+            height: 12px;
+            background-color: #444;
+            border-radius: 6px;
+            margin: 0.5rem 0 1.5rem;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background-color: var(--accent-color);
+            border-radius: 6px;
+            transition: width 0.5s ease-in-out;
+        }
+
+        .task-progress {
+            height: 8px;
+            background-color: #444;
+            border-radius: 4px;
+            margin-top: 0.5rem;
+            overflow: hidden;
+        }
+
+        .task-progress-bar {
+            height: 100%;
+            background-color: var(--primary-color);
+            border-radius: 4px;
+            transition: width 0.5s ease-in-out;
+        }
+
+        .task-item.overdue .task-progress-bar {
+            background-color: var(--delete-color);
+        }
+
+        .add-task {
+            margin-bottom: 2rem;
+        }
+
+        .add-task-form {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+            grid-column: 1 / -1;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--light-text);
+            font-weight: 500;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #444;
+            border-radius: 5px;
+            font-size: 1rem;
+            background-color: var(--dark-input-bg);
+            color: var(--light-text);
+        }
+
+        .deadline-inputs {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .deadline-inputs select, .deadline-inputs input {
+            flex: 1;
+        }
+
+        button {
+            padding: 0.75rem 1.5rem;
+            background-color: var(--primary-color);
+            color: var(--light-text);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: background-color var(--transition-time) ease, transform var(--transition-time) ease;
+        }
+
+        button:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+
+        .task-list {
+            list-style: none;
+            margin-top: 1rem;
+        }
+
+        .task-item {
+            background-color: var(--task-bg);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            animation: slideIn 0.3s ease-out;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            color: var(--light-text);
+        }
+
+        .task-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .task-details {
+            flex: 1;
+        }
+
+        .task-name {
+            font-weight: 500;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .task-deadline {
+            color: #B0B0B0;
+            font-size: 0.9rem;
+        }
+
+        .urgent {
+            color: var(--delete-color);
+            font-weight: bold;
+        }
+
+        .task-actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .complete-btn {
+            background-color: var(--primary-color);
+        }
+
+        .delete-btn {
+            background-color: var(--delete-color);
+        }
+
+        .level-up {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            color: var(--light-text);
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+            z-index: 100;
+            animation: levelUpAnim 1.5s ease-out;
+            display: none;
+        }
+
+        .level-up h2 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: var(--accent-color);
+        }
+
+        .level-up p {
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: #B0B0B0;
+        }
+
+        @keyframes levelUpAnim {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+            50% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+            100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes coinAdd {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.5); color: var(--accent-color); }
+            100% { transform: scale(1); }
+        }
+
+        .coin-animation {
+            animation: coinAdd 0.5s ease-out;
+        }
+
+        @media (max-width: 600px) {
+            .add-task-form {
+                grid-template-columns: 1fr;
+            }
+            
+            .deadline-inputs {
+                flex-direction: column;
+            }
+            
+            .task-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .task-actions {
+                width: 100%;
+                margin-top: 1rem;
+                justify-content: flex-end;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Forest Quest<img src="https://i.ytimg.com/vi/eTeBsgG3lkw/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLBsbiZakg7W-jPkhJtBh3mS2zeNrQ" alt="Leaf" class="leaf-icon"></h1>
+            <p>Complete tasks, earn coins, level up, and transform your forest!</p>
+        </header>
+
+        <div class="stats">
+            <div class="stat">
+                <div>LEVEL</div>
+                <div class="stat-value" id="level">1</div>
+            </div>
+            <div class="stat">
+                <div><img src="https://pngimg.com/d/coin_PNG36871.png" alt="Coin" class="coin-icon"></div>
+                <div class="stat-value" id="coins">0</div>
+            </div>
+            <div class="stat">
+                <div>TASKS DONE</div>
+                <div class="stat-value" id="tasks-completed">0</div>
+            </div>
+        </div>
+
+        <div>
+            <div>Level Progress</div>
+            <div class="level-progress">
+                <div class="progress-bar" id="level-progress-bar" style="width: 0%"></div>
+            </div>
+        </div>
+
+        <div class="add-task">
+            <h2>Add New Task</h2>
+            <form id="add-task-form" class="add-task-form">
+                <div class="form-group">
+                    <label for="task-name">Task Name:</label>
+                    <input type="text" id="task-name" required placeholder="Enter task name...">
+                </div>
+
+                <div class="form-group">
+                    <label for="deadline-date">Deadline:</label>
+                    <div class="deadline-inputs">
+                        <input type="date" id="deadline-date" required>
+                        <input type="time" id="deadline-time" required>
+                    </div>
+                </div>
+
+                <button type="submit">Add Task</button>
+            </form>
+        </div>
+
+        <div>
+            <h2>Tasks</h2>
+            <ul id="task-list" class="task-list">
+                <div class="empty-state" id="empty-tasks">
+                    <p>You have no tasks yet. Add a task to get started!</p>
+                </div>
+            </ul>
+        </div>
+    </div>
+
+    <div class="level-up" id="level-up-popup">
+        <h2>Level Up!</h2>
+        <p>You've reached Level <span id="new-level">2</span>!</p>
+        <p>Your forest is growing and transforming...</p>
+        <button id="level-up-ok">Continue</button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            let gameState = {
+                coins: 0,
+                level: 1,
+                tasksCompleted: 0,
+                tasks: new Map()
+            };
+
+            const coinsElement = document.getElementById('coins');
+            const levelElement = document.getElementById('level');
+            const tasksCompletedElement = document.getElementById('tasks-completed');
+            const progressBarElement = document.getElementById('level-progress-bar');
+            const taskListElement = document.getElementById('task-list');
+            const emptyTasksElement = document.getElementById('empty-tasks');
+            const addTaskForm = document.getElementById('add-task-form');
+            const taskNameInput = document.getElementById('task-name');
+            const deadlineDateInput = document.getElementById('deadline-date');
+            const deadlineTimeInput = document.getElementById('deadline-time');
+            const levelUpPopup = document.getElementById('level-up-popup');
+            const newLevelElement = document.getElementById('new-level');
+            const levelUpOkButton = document.getElementById('level-up-ok');
+
+            const backgroundImages = {
+                0: 'https://assets.grok.com/users/61aa03d5-34a6-451f-a29b-c678af050623/7qqe1265AFQU0oyA-generated_image.jpg',
+                1: 'https://ih1.redbubble.net/image.4971990187.8956/raf,360x360,075,t,fafafa:ca443f4786.jpg',
+                2: 'https://wallpapers.com/images/hd/lo-fi-anime-chill-zpbeiv7k1y45zwat.jpg',
+                3: 'https://i.ytimg.com/vi/KAqUpjcs_xc/hq720.jpg?sqp=-oaymwE7CK4FEIIDSFryq4qpAy0IARUAAAAAGAElAADIQj0AgKJD8AEB-AH-CYAC0AWKAgwIABABGC8gZChyMA8=&rs=AOn4CLBREcqsX48B9zFgdfrQuGwurotqrg',
+                4: 'https://i1.sndcdn.com/artworks-G9UzrSoAlsn4Ed7i-AAjR3Q-t500x500.jpg',
+                5: 'https://i1.sndcdn.com/artworks-RqAOy7Z3ktf3xBLd-5KXuqA-t500x500.jpg'
+            };
+
+            function loadGameState() {
+                const savedState = localStorage.getItem('forestQuestState');
+                if (savedState) {
+                    const parsedState = JSON.parse(savedState);
+                    gameState.coins = parsedState.coins || 0;
+                    gameState.level = parsedState.level || 1;
+                    gameState.tasksCompleted = parsedState.tasksCompleted || 0;
+                    gameState.tasks = new Map();
+                    (parsedState.tasks || []).forEach(task => {
+                        if (task.id) {
+                            gameState.tasks.set(task.id, task);
+                        }
+                    });
+                }
+                updateUI();
+                updateBackground();
+                renderTasks();
+                clearInterval(window.taskCheckInterval);
+                window.taskCheckInterval = setInterval(checkDeadlines, 60000);
+            }
+
+            function saveGameState() {
+                const stateToSave = {
+                    coins: gameState.coins,
+                    level: gameState.level,
+                    tasksCompleted: gameState.tasksCompleted,
+                    tasks: Array.from(gameState.tasks.values())
+                };
+                localStorage.setItem('forestQuestState', JSON.stringify(stateToSave));
+            }
+
+            function updateUI() {
+                coinsElement.textContent = gameState.coins;
+                levelElement.textContent = gameState.level;
+                tasksCompletedElement.textContent = gameState.tasksCompleted;
+                const progress = (gameState.coins % 1000) / 10;
+                progressBarElement.style.width = `${progress}%`;
+            }
+
+            function updateBackground() {
+                document.body.style.backgroundImage = `url('${backgroundImages[gameState.level > 5 ? 5 : gameState.level]}')`;
+            }
+
+            function generateTaskId() {
+                return Date.now().toString(36) + Math.random().toString(36).substr(2);
+            }
+
+            function formatDateTime(date) {
+                return new Date(date).toLocaleString(undefined, {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            }
+
+            function isUrgent(deadline) {
+                const now = new Date();
+                const deadlineDate = new Date(deadline);
+                return (deadlineDate - now) < 3600000 && (deadlineDate - now) > 0;
+            }
+
+            function isPastDeadline(deadline) {
+                const now = new Date();
+                const deadlineDate = new Date(deadline);
+                return now > deadlineDate;
+            }
+
+            function calculateTaskProgress(deadline, created) {
+                const now = new Date().getTime();
+                const deadlineDate = new Date(deadline).getTime();
+                const createdDate = new Date(created).getTime();
+                
+                const totalDuration = deadlineDate - createdDate;
+                const elapsed = now - createdDate;
+                const progress = (totalDuration - (deadlineDate - now)) / totalDuration * 100;
+                
+                if (deadlineDate < now) return 100;
+                if (totalDuration <= 0) return 0;
+                
+                return Math.max(0, Math.min(100, progress));
+            }
+
+            function renderTasks() {
+                if (gameState.tasks.size === 0) {
+                    emptyTasksElement.style.display = 'block';
+                } else {
+                    emptyTasksElement.style.display = 'none';
+                }
+
+                while (taskListElement.firstChild) {
+                    if (taskListElement.firstChild !== emptyTasksElement) {
+                        taskListElement.removeChild(taskListElement.firstChild);
+                    } else {
+                        break;
+                    }
+                }
+
+                const sortedTasks = Array.from(gameState.tasks.values()).sort((a, b) => {
+                    return new Date(a.deadline) - new Date(b.deadline);
+                });
+
+                sortedTasks.forEach(task => {
+                    const taskItem = document.createElement('li');
+                    taskItem.className = 'task-item';
+                    taskItem.dataset.id = task.id;
+                    if (isPastDeadline(task.deadline)) {
+                        taskItem.classList.add('overdue');
+                    }
+
+                    const deadlineClass = isUrgent(task.deadline) ? 'urgent' : '';
+                    const isPast = isPastDeadline(task.deadline);
+                    const progress = calculateTaskProgress(task.deadline, task.created);
+
+                    taskItem.innerHTML = `
+                        <div class="task-details">
+                            <div class="task-name">${task.name}</div>
+                            <div class="task-deadline ${deadlineClass}">
+                                ${isPast ? '⚠️ OVERDUE: ' : ''}Due: ${formatDateTime(task.deadline)}
+                            </div>
+                            <div class="task-progress">
+                                <div class="task-progress-bar" style="width: ${progress}%"></div>
+                            </div>
+                        </div>
+                        <div class="task-actions">
+                            <button class="complete-btn">✓ Complete</button>
+                            <button class="delete-btn">Delete</button>
+                        </div>
+                    `;
+
+                    taskListElement.appendChild(taskItem);
+
+                    const completeBtn = taskItem.querySelector('.complete-btn');
+                    const deleteBtn = taskItem.querySelector('.delete-btn');
+
+                    completeBtn.addEventListener('click', () => completeTask(task.id));
+                    deleteBtn.addEventListener('click', () => deleteTask(task.id));
+                });
+            }
+
+            function addTask(name, deadline) {
+                const id = generateTaskId();
+                if (gameState.tasks.has(id)) return;
+
+                const newTask = {
+                    id: id,
+                    name: name,
+                    deadline: deadline,
+                    created: new Date().toISOString()
+                };
+
+                gameState.tasks.set(id, newTask);
+                saveGameState();
+                renderTasks();
+            }
+
+            function completeTask(taskId) {
+                if (!gameState.tasks.has(taskId)) return;
+
+                gameState.tasks.delete(taskId);
+                addCoins(100);
+                gameState.tasksCompleted++;
+
+                saveGameState();
+                renderTasks();
+                updateUI();
+            }
+
+            function deleteTask(taskId) {
+                if (!gameState.tasks.has(taskId)) return;
+
+                gameState.tasks.delete(taskId);
+                saveGameState();
+                renderTasks();
+            }
+
+            function addCoins(amount) {
+                gameState.coins += amount;
+                coinsElement.classList.add('coin-animation');
+                
+                const previousLevel = gameState.level;
+                gameState.level = Math.floor(gameState.coins / 1000) + 1;
+                
+                if (gameState.level > previousLevel) {
+                    showLevelUp(gameState.level);
+                }
+                
+                setTimeout(() => {
+                    coinsElement.classList.remove('coin-animation');
+                }, 500);
+                saveGameState();
+                updateUI();
+            }
+
+            function removeCoins(amount) {
+                gameState.coins = Math.max(0, gameState.coins - amount);
+                saveGameState();
+                updateUI();
+            }
+
+            function showLevelUp(newLevel) {
+                newLevelElement.textContent = newLevel;
+                levelUpPopup.style.display = 'block';
+                updateBackground();
+            }
+
+            function checkDeadlines() {
+                let penalty = false;
+                
+                for (let [id, task] of gameState.tasks) {
+                    if (isPastDeadline(task.deadline)) {
+                        penalty = true;
+                    }
+                }
+                
+                if (penalty) {
+                    removeCoins(50);
+                    updateUI();
+                }
+                
+                renderTasks();
+            }
+
+            addTaskForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const name = taskNameInput.value.trim();
+                const deadlineDate = deadlineDateInput.value;
+                const deadlineTime = deadlineTimeInput.value;
+                
+                if (!name || !deadlineDate || !deadlineTime) return;
+                
+                const deadline = new Date(`${deadlineDate}T${deadlineTime}`).toISOString();
+                
+                addTask(name, deadline);
+                
+                taskNameInput.value = '';
+                
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                deadlineDateInput.value = tomorrow.toISOString().split('T')[0];
+            });
+
+            levelUpOkButton.addEventListener('click', function() {
+                levelUpPopup.style.display = 'none';
+            });
+
+            const today = new Date();
+            deadlineDateInput.value = today.toISOString().split('T')[0];
+            deadlineTimeInput.value = '23:59';
+
+            loadGameState();
+        });
+    </script>
+    <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'91ad769bcb1453ee',t:'MTc0MTA1MDMwNS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
+</body>
+</html>
