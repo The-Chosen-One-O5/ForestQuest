@@ -142,6 +142,104 @@
             transition: width 0.5s ease-in-out;
         }
 
+        .targets-btn {
+            margin: 1rem 0;
+            padding: 0.75rem 1.5rem;
+            background-color: var(--accent-color);
+            color: #000;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: background-color var(--transition-time) ease, transform var(--transition-time) ease;
+        }
+
+        .targets-btn:hover {
+            background-color: #e6c200;
+            transform: translateY(-2px);
+        }
+
+        .targets-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(40, 40, 40, 0.95);
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            max-height: 80vh;
+            overflow-y: auto;
+            width: 90%;
+            max-width: 700px;
+            z-index: 101;
+            display: none;
+        }
+
+        .targets-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            color: var(--light-text);
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+
+        .targets-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .targets-table tr.class-row {
+            background-color: var(--primary-color);
+            color: var(--light-text);
+            font-weight: bold;
+        }
+
+        .targets-table tr.subject-row {
+            background-color: #FFFFFF;
+            color: #000;
+            font-weight: bold;
+        }
+
+        .targets-table tr.topic-row {
+            background-color: #FFFFFF;
+            color: #000;
+        }
+
+        .targets-table td {
+            padding: 0.5rem;
+            border-bottom: 1px solid #444;
+        }
+
+        .subject-progress {
+            height: 10px;
+            background-color: #ddd;
+            border-radius: 5px;
+            overflow: hidden;
+            width: 150px;
+        }
+
+        .subject-progress-bar {
+            height: 100%;
+            background-color: var(--primary-color);
+            border-radius: 5px;
+            transition: width 0.5s ease-in-out;
+        }
+
+        .progress-input {
+            width: 60px;
+            padding: 0.25rem;
+            border: 1px solid #444;
+            border-radius: 5px;
+            background-color: var(--dark-input-bg);
+            color: var(--light-text);
+            text-align: center;
+        }
+
         .task-item.overdue .task-progress-bar {
             background-color: var(--delete-color);
         }
@@ -338,6 +436,18 @@
                 margin-top: 1rem;
                 justify-content: flex-end;
             }
+
+            .targets-table td {
+                padding: 0.3rem;
+            }
+
+            .subject-progress {
+                width: 100px;
+            }
+
+            .progress-input {
+                width: 50px;
+            }
         }
     </style>
 </head>
@@ -390,6 +500,8 @@
             </form>
         </div>
 
+        <button class="targets-btn" id="targets-btn">Targets</button>
+
         <div>
             <h2>Tasks</h2>
             <ul id="task-list" class="task-list">
@@ -407,6 +519,105 @@
         <button id="level-up-ok">Continue</button>
     </div>
 
+    <div class="targets-popup" id="targets-popup">
+        <button class="targets-close" id="targets-close">X</button>
+        <table class="targets-table">
+            <tbody>
+                <!-- Class 11 -->
+                <tr class="class-row"><td colspan="3">Class 11</td></tr>
+                <!-- Physics -->
+                <tr class="subject-row"><td colspan="3">Physics</td></tr>
+                <tr class="topic-row"><td>Physical World and Measurement</td><td><div class="subject-progress" data-subject="Physical World and Measurement"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Kinematics</td><td><div class="subject-progress" data-subject="Kinematics"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Laws of Motion</td><td><div class="subject-progress" data-subject="Laws of Motion"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Work, Energy and Power</td><td><div class="subject-progress" data-subject="Work, Energy and Power"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Motion of System of Particles and Rigid Body</td><td><div class="subject-progress" data-subject="Motion of System of Particles and Rigid Body"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Gravitation</td><td><div class="subject-progress" data-subject="Gravitation"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Properties of Bulk Matter</td><td><div class="subject-progress" data-subject="Properties of Bulk Matter"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Thermodynamics</td><td><div class="subject-progress" data-subject="Thermodynamics (Physics Class 11)"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Behavior of Perfect Gas and Kinetic Theory</td><td><div class="subject-progress" data-subject="Behavior of Perfect Gas and Kinetic Theory"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Oscillations and Waves</td><td><div class="subject-progress" data-subject="Oscillations and Waves"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <!-- Chemistry -->
+                <tr class="subject-row"><td colspan="3">Chemistry</td></tr>
+                <tr class="topic-row"><td>Some Basic Concepts of Chemistry</td><td><div class="subject-progress" data-subject="Some Basic Concepts of Chemistry"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Structure of Atom</td><td><div class="subject-progress" data-subject="Structure of Atom"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Classification of Elements and Periodicity in Properties</td><td><div class="subject-progress" data-subject="Classification of Elements and Periodicity in Properties"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Chemical Bonding and Molecular Structure</td><td><div class="subject-progress" data-subject="Chemical Bonding and Molecular Structure"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>States of Matter: Gases and Liquids</td><td><div class="subject-progress" data-subject="States of Matter: Gases and Liquids"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Thermodynamics</td><td><div class="subject-progress" data-subject="Thermodynamics (Chemistry Class 11)"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Equilibrium</td><td><div class="subject-progress" data-subject="Equilibrium"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Redox Reactions</td><td><div class="subject-progress" data-subject="Redox Reactions"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Hydrogen</td><td><div class="subject-progress" data-subject="Hydrogen"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>s-Block Element (Alkali and Alkaline earth metals)</td><td><div class="subject-progress" data-subject="s-Block Element (Alkali and Alkaline earth metals)"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Some p-Block Elements</td><td><div class="subject-progress" data-subject="Some p-Block Elements"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Organic Chemistry - Some Basic Principles and Techniques</td><td><div class="subject-progress" data-subject="Organic Chemistry - Some Basic Principles and Techniques"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Hydrocarbons</td><td><div class="subject-progress" data-subject="Hydrocarbons"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Environmental Chemistry</td><td><div class="subject-progress" data-subject="Environmental Chemistry"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <!-- Mathematics -->
+                <tr class="subject-row"><td colspan="3">Mathematics</td></tr>
+                <tr class="topic-row"><td>Sets and Functions</td><td><div class="subject-progress" data-subject="Sets and Functions"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Trigonometric Functions</td><td><div class="subject-progress" data-subject="Trigonometric Functions"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Complex Numbers and Quadratic Equations</td><td><div class="subject-progress" data-subject="Complex Numbers and Quadratic Equations"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Linear Inequalities</td><td><div class="subject-progress" data-subject="Linear Inequalities"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Permutations and Combinations</td><td><div class="subject-progress" data-subject="Permutations and Combinations (Class 11)"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Binomial Theorem</td><td><div class="subject-progress" data-subject="Binomial Theorem"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Sequences and Series</td><td><div class="subject-progress" data-subject="Sequences and Series"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Straight Lines</td><td><div class="subject-progress" data-subject="Straight Lines"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Conic Sections</td><td><div class="subject-progress" data-subject="Conic Sections"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Introduction to Three-Dimensional Geometry</td><td><div class="subject-progress" data-subject="Introduction to Three-Dimensional Geometry"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Limits and Derivatives</td><td><div class="subject-progress" data-subject="Limits and Derivatives"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Mathematical Reasoning</td><td><div class="subject-progress" data-subject="Mathematical Reasoning"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Statistics and Probability</td><td><div class="subject-progress" data-subject="Statistics and Probability (Class 11)"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Mathematical Induction</td><td><div class="subject-progress" data-subject="Mathematical Induction"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <!-- Class 12 -->
+                <tr class="class-row"><td colspan="3">Class 12</td></tr>
+                <!-- Physics -->
+                <tr class="subject-row"><td colspan="3">Physics</td></tr>
+                <tr class="topic-row"><td>Electrostatics</td><td><div class="subject-progress" data-subject="Electrostatics"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Current Electricity</td><td><div class="subject-progress" data-subject="Current Electricity"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Magnetic Effects of Current and Magnetism</td><td><div class="subject-progress" data-subject="Magnetic Effects of Current and Magnetism"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Electromagnetic Induction and Alternating Currents</td><td><div class="subject-progress" data-subject="Electromagnetic Induction and Alternating Currents"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Electromagnetic Waves</td><td><div class="subject-progress" data-subject="Electromagnetic Waves"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Optics</td><td><div class="subject-progress" data-subject="Optics"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Dual Nature of Matter and Radiation</td><td><div class="subject-progress" data-subject="Dual Nature of Matter and Radiation"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Atoms and Nuclei</td><td><div class="subject-progress" data-subject="Atoms and Nuclei"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Electronic Devices</td><td><div class="subject-progress" data-subject="Electronic Devices"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <!-- Chemistry -->
+                <tr class="subject-row"><td colspan="3">Chemistry</td></tr>
+                <tr class="topic-row"><td>Solid State</td><td><div class="subject-progress" data-subject="Solid State"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Solutions</td><td><div class="subject-progress" data-subject="Solutions"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Electrochemistry</td><td><div class="subject-progress" data-subject="Electrochemistry"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Chemical Kinetics</td><td><div class="subject-progress" data-subject="Chemical Kinetics"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Surface Chemistry</td><td><div class="subject-progress" data-subject="Surface Chemistry"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>General Principles and Processes of Isolation of Elements</td><td><div class="subject-progress" data-subject="General Principles and Processes of Isolation of Elements"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>p-Block Elements</td><td><div class="subject-progress" data-subject="p-Block Elements"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>d and f Block Elements</td><td><div class="subject-progress" data-subject="d and f Block Elements"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Coordination Compounds</td><td><div class="subject-progress" data-subject="Coordination Compounds"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Haloalkanes and Haloarenes</td><td><div class="subject-progress" data-subject="Haloalkanes and Haloarenes"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Alcohols, Phenols and Ethers</td><td><div class="subject-progress" data-subject="Alcohols, Phenols and Ethers"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Aldehydes, Ketones and Carboxylic Acids</td><td><div class="subject-progress" data-subject="Aldehydes, Ketones and Carboxylic Acids"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Organic Compounds Containing Nitrogen</td><td><div class="subject-progress" data-subject="Organic Compounds Containing Nitrogen"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Biomolecules</td><td><div class="subject-progress" data-subject="Biomolecules"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Polymers</td><td><div class="subject-progress" data-subject="Polymers"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Chemistry in Everyday Life</td><td><div class="subject-progress" data-subject="Chemistry in Everyday Life"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <!-- Mathematics -->
+                <tr class="subject-row"><td colspan="3">Mathematics</td></tr>
+                <tr class="topic-row"><td>Relations and Functions</td><td><div class="subject-progress" data-subject="Relations and Functions"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Inverse Trigonometric Functions</td><td><div class="subject-progress" data-subject="Inverse Trigonometric Functions"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Matrices and Determinants</td><td><div class="subject-progress" data-subject="Matrices and Determinants"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Continuity and Differentiability</td><td><div class="subject-progress" data-subject="Continuity and Differentiability"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Application of Derivatives</td><td><div class="subject-progress" data-subject="Application of Derivatives"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Integrals</td><td><div class="subject-progress" data-subject="Integrals"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Applications of Integrals</td><td><div class="subject-progress" data-subject="Applications of Integrals"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Differential Equations</td><td><div class="subject-progress" data-subject="Differential Equations"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Vectors</td><td><div class="subject-progress" data-subject="Vectors"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Three-Dimensional Geometry</td><td><div class="subject-progress" data-subject="Three-Dimensional Geometry"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Linear Programming</td><td><div class="subject-progress" data-subject="Linear Programming"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Probability</td><td><div class="subject-progress" data-subject="Probability"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+            </tbody>
+        </table>
+    </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             let gameState = {
@@ -415,6 +626,8 @@
                 tasksCompleted: 0,
                 tasks: new Map()
             };
+
+            let subjectProgress = new Map();
 
             const coinsElement = document.getElementById('coins');
             const levelElement = document.getElementById('level');
@@ -429,6 +642,9 @@
             const levelUpPopup = document.getElementById('level-up-popup');
             const newLevelElement = document.getElementById('new-level');
             const levelUpOkButton = document.getElementById('level-up-ok');
+            const targetsBtn = document.getElementById('targets-btn');
+            const targetsPopup = document.getElementById('targets-popup');
+            const targetsClose = document.getElementById('targets-close');
 
             const backgroundImages = {
                 0: 'https://assets.grok.com/users/61aa03d5-34a6-451f-a29b-c678af050623/7qqe1265AFQU0oyA-generated_image.jpg',
@@ -439,8 +655,49 @@
                 5: 'https://i1.sndcdn.com/artworks-RqAOy7Z3ktf3xBLd-5KXuqA-t500x500.jpg'
             };
 
-            let intervalId = null; // Store the interval ID to prevent duplicates
+            let intervalId = null;
 
+            // Load subject progress from localStorage
+            function loadSubjectProgress() {
+                const savedProgress = localStorage.getItem('subjectProgress');
+                if (savedProgress) {
+                    subjectProgress = new Map(JSON.parse(savedProgress));
+                }
+                updateSubjectProgressBars();
+            }
+
+            // Save subject progress to localStorage
+            function saveSubjectProgress() {
+                localStorage.setItem('subjectProgress', JSON.stringify([...subjectProgress]));
+            }
+
+            // Update progress bars based on subjectProgress
+            function updateSubjectProgressBars() {
+                document.querySelectorAll('.subject-progress').forEach(progressBar => {
+                    const subject = progressBar.dataset.subject;
+                    const questionsDone = parseInt(subjectProgress.get(subject) || 0);
+                    const isClass11 = progressBar.closest('tr').previousElementSibling.previousElementSibling.classList.contains('class-row') && progressBar.closest('tr').previousElementSibling.previousElementSibling.textContent.includes('Class 11');
+                    const totalQuestions = isClass11 ? 112 : 196;
+                    const progressPercentage = Math.min((questionsDone / totalQuestions) * 100, 100);
+                    progressBar.querySelector('.subject-progress-bar').style.width = `${progressPercentage}%`;
+                    const input = progressBar.parentElement.nextElementSibling.querySelector('.progress-input');
+                    input.value = questionsDone > 0 ? `${questionsDone}Q` : '';
+                });
+            }
+
+            // Handle progress input updates
+            function handleProgressInput(event) {
+                const input = event.target;
+                const subject = input.closest('tr').querySelector('.subject-progress').dataset.subject;
+                let value = input.value.replace(/[^0-9]/g, ''); // Extract only numbers
+                if (value === '') value = '0';
+                const questionsDone = parseInt(value);
+                subjectProgress.set(subject, questionsDone);
+                saveSubjectProgress();
+                updateSubjectProgressBars();
+            }
+
+            // Load game state
             function loadGameState() {
                 const savedState = localStorage.getItem('forestQuestState');
                 if (savedState) {
@@ -459,7 +716,6 @@
                 updateBackground();
                 renderTasks();
 
-                // Ensure only one interval is running
                 if (intervalId) {
                     clearInterval(intervalId);
                 }
@@ -536,7 +792,6 @@
                     emptyTasksElement.style.display = 'none';
                 }
 
-                // Clear all existing tasks except the empty state
                 while (taskListElement.firstChild) {
                     if (taskListElement.firstChild !== emptyTasksElement) {
                         taskListElement.removeChild(taskListElement.firstChild);
@@ -550,7 +805,6 @@
                 });
 
                 sortedTasks.forEach(task => {
-                    // Check if this task already exists in the DOM to prevent duplicates
                     if (!taskListElement.querySelector(`[data-id="${task.id}"]`)) {
                         const taskItem = document.createElement('li');
                         taskItem.className = 'task-item';
@@ -594,7 +848,6 @@
                 const id = generateTaskId();
                 if (gameState.tasks.has(id)) return;
 
-                // Additional check to prevent duplicates by name and deadline
                 const taskExists = Array.from(gameState.tasks.values()).some(task => 
                     task.name === name && task.deadline === deadline
                 );
@@ -679,6 +932,21 @@
                 renderTasks();
             }
 
+            // Targets popup handlers
+            targetsBtn.addEventListener('click', () => {
+                targetsPopup.style.display = 'block';
+            });
+
+            targetsClose.addEventListener('click', () => {
+                targetsPopup.style.display = 'none';
+            });
+
+            // Add event listeners to progress inputs
+            document.querySelectorAll('.progress-input').forEach(input => {
+                input.addEventListener('input', handleProgressInput);
+                input.addEventListener('blur', handleProgressInput); // Update on blur as well
+            });
+
             addTaskForm.addEventListener('submit', function(e) {
                 e.preventDefault();
                 
@@ -708,8 +976,8 @@
             deadlineTimeInput.value = '23:59';
 
             loadGameState();
+            loadSubjectProgress();
 
-            // Cleanup on page unload to prevent duplicate intervals
             window.addEventListener('beforeunload', () => {
                 if (intervalId) {
                     clearInterval(intervalId);
