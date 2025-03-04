@@ -439,6 +439,8 @@
                 5: 'https://i1.sndcdn.com/artworks-RqAOy7Z3ktf3xBLd-5KXuqA-t500x500.jpg'
             };
 
+            let intervalId = null; // Store the interval ID to prevent duplicates
+
             function loadGameState() {
                 const savedState = localStorage.getItem('forestQuestState');
                 if (savedState) {
@@ -448,7 +450,7 @@
                     gameState.tasksCompleted = parsedState.tasksCompleted || 0;
                     gameState.tasks = new Map();
                     (parsedState.tasks || []).forEach(task => {
-                        if (task.id) {
+                        if (task.id && !gameState.tasks.has(task.id)) {
                             gameState.tasks.set(task.id, task);
                         }
                     });
@@ -456,8 +458,12 @@
                 updateUI();
                 updateBackground();
                 renderTasks();
-                clearInterval(window.taskCheckInterval);
-                window.taskCheckInterval = setInterval(checkDeadlines, 60000);
+
+                // Ensure only one interval is running
+                if (intervalId) {
+                    clearInterval(intervalId);
+                }
+                intervalId = setInterval(checkDeadlines, 60000);
             }
 
             function saveGameState() {
@@ -530,6 +536,7 @@
                     emptyTasksElement.style.display = 'none';
                 }
 
+                // Clear all existing tasks except the empty state
                 while (taskListElement.firstChild) {
                     if (taskListElement.firstChild !== emptyTasksElement) {
                         taskListElement.removeChild(taskListElement.firstChild);
@@ -543,46 +550,55 @@
                 });
 
                 sortedTasks.forEach(task => {
-                    const taskItem = document.createElement('li');
-                    taskItem.className = 'task-item';
-                    taskItem.dataset.id = task.id;
-                    if (isPastDeadline(task.deadline)) {
-                        taskItem.classList.add('overdue');
+                    // Check if this task already exists in the DOM to prevent duplicates
+                    if (!taskListElement.querySelector(`[data-id="${task.id}"]`)) {
+                        const taskItem = document.createElement('li');
+                        taskItem.className = 'task-item';
+                        taskItem.dataset.id = task.id;
+                        if (isPastDeadline(task.deadline)) {
+                            taskItem.classList.add('overdue');
+                        }
+
+                        const deadlineClass = isUrgent(task.deadline) ? 'urgent' : '';
+                        const isPast = isPastDeadline(task.deadline);
+                        const progress = calculateTaskProgress(task.deadline, task.created);
+
+                        taskItem.innerHTML = `
+                            <div class="task-details">
+                                <div class="task-name">${task.name}</div>
+                                <div class="task-deadline ${deadlineClass}">
+                                    ${isPast ? '⚠️ OVERDUE: ' : ''}Due: ${formatDateTime(task.deadline)}
+                                </div>
+                                <div class="task-progress">
+                                    <div class="task-progress-bar" style="width: ${progress}%"></div>
+                                </div>
+                            </div>
+                            <div class="task-actions">
+                                <button class="complete-btn">✓ Complete</button>
+                                <button class="delete-btn">Delete</button>
+                            </div>
+                        `;
+
+                        taskListElement.appendChild(taskItem);
+
+                        const completeBtn = taskItem.querySelector('.complete-btn');
+                        const deleteBtn = taskItem.querySelector('.delete-btn');
+
+                        completeBtn.addEventListener('click', () => completeTask(task.id));
+                        deleteBtn.addEventListener('click', () => deleteTask(task.id));
                     }
-
-                    const deadlineClass = isUrgent(task.deadline) ? 'urgent' : '';
-                    const isPast = isPastDeadline(task.deadline);
-                    const progress = calculateTaskProgress(task.deadline, task.created);
-
-                    taskItem.innerHTML = `
-                        <div class="task-details">
-                            <div class="task-name">${task.name}</div>
-                            <div class="task-deadline ${deadlineClass}">
-                                ${isPast ? '⚠️ OVERDUE: ' : ''}Due: ${formatDateTime(task.deadline)}
-                            </div>
-                            <div class="task-progress">
-                                <div class="task-progress-bar" style="width: ${progress}%"></div>
-                            </div>
-                        </div>
-                        <div class="task-actions">
-                            <button class="complete-btn">✓ Complete</button>
-                            <button class="delete-btn">Delete</button>
-                        </div>
-                    `;
-
-                    taskListElement.appendChild(taskItem);
-
-                    const completeBtn = taskItem.querySelector('.complete-btn');
-                    const deleteBtn = taskItem.querySelector('.delete-btn');
-
-                    completeBtn.addEventListener('click', () => completeTask(task.id));
-                    deleteBtn.addEventListener('click', () => deleteTask(task.id));
                 });
             }
 
             function addTask(name, deadline) {
                 const id = generateTaskId();
                 if (gameState.tasks.has(id)) return;
+
+                // Additional check to prevent duplicates by name and deadline
+                const taskExists = Array.from(gameState.tasks.values()).some(task => 
+                    task.name === name && task.deadline === deadline
+                );
+                if (taskExists) return;
 
                 const newTask = {
                     id: id,
@@ -692,6 +708,13 @@
             deadlineTimeInput.value = '23:59';
 
             loadGameState();
+
+            // Cleanup on page unload to prevent duplicate intervals
+            window.addEventListener('beforeunload', () => {
+                if (intervalId) {
+                    clearInterval(intervalId);
+                }
+            });
         });
     </script>
     <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'91ad769bcb1453ee',t:'MTc0MTA1MDMwNS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
