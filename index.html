@@ -784,6 +784,7 @@
         <label for="marks-input">Enter your Marks (out of 300):</label>
         <input type="number" id="marks-input" min="0" max="300" placeholder="Enter marks...">
         <button id="submit-marks-btn">Submit</button>
+        <button id="cancel-marks-btn" style="background-color: var(--delete-color); margin-top: 0.5rem;">Cancel</button>
     </div>
 
     <div class="signin-overlay" id="signin-overlay">
@@ -839,6 +840,7 @@
             const marksInputPopup = document.getElementById('marks-input-popup');
             const marksInput = document.getElementById('marks-input');
             const submitMarksBtn = document.getElementById('submit-marks-btn');
+            const cancelMarksBtn = document.getElementById('cancel-marks-btn');
 
             const backgroundImages = {
                 0: 'https://assets.grok.com/users/61aa03d5-34a6-451f-a29b-c678af050623/7qqe1265AFQU0oyA-generated_image.jpg',
@@ -1340,6 +1342,8 @@
             document.addEventListener('keydown', (e) => {
                 if (e.key.toLowerCase() === 't') {
                     graphSidebar.classList.toggle('open');
+                    const existingButton = document.querySelector('.delete-graph-point');
+                    if (existingButton) existingButton.remove();
                 }
             });
 
@@ -1363,6 +1367,12 @@
                 } else {
                     alert('Please enter marks between 0 and 300');
                 }
+            });
+
+            cancelMarksBtn.addEventListener('click', () => {
+                marksInputPopup.style.display = 'none';
+                document.getElementById('marks-name').value = '';
+                marksInput.value = '';
             });
 
             targetsBtn.addEventListener('click', () => {
