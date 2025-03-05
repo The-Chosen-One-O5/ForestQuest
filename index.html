@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Forest Quest - Gamified Productivity</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --primary-color: #4CAF50;
@@ -17,6 +18,7 @@
             --dark-container: rgba(40, 40, 40, 0.9);
             --dark-input-bg: #2C2C2C;
             --overlay: rgba(0, 0, 0, 0.4);
+            --graph-bg: #2A2A2A;
         }
 
         * {
@@ -391,7 +393,6 @@
             color: #B0B0B0;
         }
 
-        /* Sign-In Styles */
         .blur {
             filter: blur(5px);
             pointer-events: none;
@@ -460,6 +461,85 @@
         .signout-btn {
             background-color: var(--delete-color);
             margin-top: 1rem;
+        }
+
+        /* Graph Sidebar Styles */
+        .graph-sidebar {
+            position: fixed;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background-color: var(--graph-bg);
+            z-index: 102;
+            transition: left var(--transition-time) ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        .graph-sidebar.open {
+            left: 0;
+        }
+
+        .graph-title {
+            color: var(--light-text);
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .graph-container {
+            width: 90%;
+            max-width: 1000px;
+            height: 80%;
+            background-color: #333;
+            border-radius: 10px;
+            padding: 1rem;
+        }
+
+        .add-marks-btn {
+            margin-top: 1rem;
+            padding: 0.75rem 1.5rem;
+            background-color: var(--primary-color);
+            color: var(--light-text);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color var(--transition-time) ease;
+        }
+
+        .add-marks-btn:hover {
+            background-color: var(--secondary-color);
+        }
+
+        .marks-input-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: var(--dark-container);
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            z-index: 103;
+            display: none;
+        }
+
+        .marks-input-popup input {
+            padding: 0.5rem;
+            margin: 0.5rem 0;
+            width: 100%;
+            background-color: var(--dark-input-bg);
+            color: var(--light-text);
+            border: 1px solid #444;
+            border-radius: 5px;
+        }
+
+        .marks-input-popup button {
+            margin-top: 0.5rem;
+            width: 100%;
         }
 
         @keyframes levelUpAnim {
@@ -691,6 +771,22 @@
         </table>
     </div>
 
+    <!-- Graph Sidebar -->
+    <div class="graph-sidebar" id="graph-sidebar">
+        <h2 class="graph-title">TEST GRAPH</h2>
+        <div class="graph-container">
+            <canvas id="marksGraph"></canvas>
+        </div>
+        <button class="add-marks-btn" id="add-marks-btn">+</button>
+    </div>
+
+    <!-- Marks Input Popup -->
+    <div class="marks-input-popup" id="marks-input-popup">
+        <label for="marks-input">Enter your Marks (out of 300):</label>
+        <input type="number" id="marks-input" min="0" max="300" placeholder="Enter marks...">
+        <button id="submit-marks-btn">Submit</button>
+    </div>
+
     <!-- Sign-In Overlay -->
     <div class="signin-overlay" id="signin-overlay">
         <div class="signin-box">
@@ -740,6 +836,13 @@
             const mainContent = document.querySelector('.main-content');
             const signoutBtn = document.getElementById('signout-btn');
 
+            // Graph Elements
+            const graphSidebar = document.getElementById('graph-sidebar');
+            const addMarksBtn = document.getElementById('add-marks-btn');
+            const marksInputPopup = document.getElementById('marks-input-popup');
+            const marksInput = document.getElementById('marks-input');
+            const submitMarksBtn = document.getElementById('submit-marks-btn');
+
             const backgroundImages = {
                 0: 'https://assets.grok.com/users/61aa03d5-34a6-451f-a29b-c678af050623/7qqe1265AFQU0oyA-generated_image.jpg',
                 1: 'https://ih1.redbubble.net/image.4971990187.8956/raf,360x360,075,t,fafafa:ca443f4786.jpg',
@@ -750,6 +853,65 @@
             };
 
             let intervalId = null;
+
+            // Graph Data
+            let marksData = {
+                labels: [],
+                datasets: [{
+                    label: 'Marks',
+                    data: [],
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    fill: false,
+                    tension: 0.1
+                }]
+            };
+
+            const ctx = document.getElementById('marksGraph').getContext('2d');
+            const marksChart = new Chart(ctx, {
+                type: 'line',
+                data: marksData,
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 300,
+                            title: {
+                                display: true,
+                                text: 'Marks',
+                                color: '#FFFFFF'
+                            },
+                            ticks: {
+                                color: '#FFFFFF'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Date',
+                                color: '#FFFFFF'
+                            },
+                            ticks: {
+                                color: '#FFFFFF'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#FFFFFF'
+                            }
+                        }
+                    }
+                }
+            });
 
             // User Management
             function loadUsers() {
@@ -785,8 +947,8 @@
                     signoutBtn.style.display = 'block';
                     loadGameState();
                     loadSubjectProgress();
+                    loadMarksData();
                 } else if (!users[username]) {
-                    // New user, create account
                     users[username] = { password: password };
                     saveUsers(users);
                     currentUser = username;
@@ -798,6 +960,7 @@
                     signoutBtn.style.display = 'block';
                     loadGameState();
                     loadSubjectProgress();
+                    loadMarksData();
                 } else {
                     signinError.style.display = 'block';
                 }
@@ -829,7 +992,7 @@
 
             signoutBtn.addEventListener('click', signOut);
 
-            // Load subject progress from localStorage
+            // Load subject progress
             function loadSubjectProgress() {
                 if (!currentUser) return;
                 const savedProgress = localStorage.getItem(`subjectProgress_${currentUser}`);
@@ -839,13 +1002,11 @@
                 updateSubjectProgressBars();
             }
 
-            // Save subject progress to localStorage
             function saveSubjectProgress() {
                 if (!currentUser) return;
                 localStorage.setItem(`subjectProgress_${currentUser}`, JSON.stringify([...subjectProgress]));
             }
 
-            // Update progress bars based on subjectProgress
             function updateSubjectProgressBars() {
                 document.querySelectorAll('.subject-progress').forEach(progressBar => {
                     const subject = progressBar.dataset.subject;
@@ -859,16 +1020,36 @@
                 });
             }
 
-            // Handle progress input updates
             function handleProgressInput(event) {
                 const input = event.target;
                 const subject = input.closest('tr').querySelector('.subject-progress').dataset.subject;
-                let value = input.value.replace(/[^0-9]/g, ''); // Extract only numbers
+                let value = input.value.replace(/[^0-9]/g, '');
                 if (value === '') value = '0';
                 const questionsDone = parseInt(value);
                 subjectProgress.set(subject, questionsDone);
                 saveSubjectProgress();
                 updateSubjectProgressBars();
+            }
+
+            // Load marks data
+            function loadMarksData() {
+                if (!currentUser) return;
+                const savedMarks = localStorage.getItem(`marksData_${currentUser}`);
+                if (savedMarks) {
+                    const parsedMarks = JSON.parse(savedMarks);
+                    marksData.labels = parsedMarks.labels;
+                    marksData.datasets[0].data = parsedMarks.data;
+                    marksChart.update();
+                }
+            }
+
+            function saveMarksData() {
+                if (!currentUser) return;
+                const dataToSave = {
+                    labels: marksData.labels,
+                    data: marksData.datasets[0].data
+                };
+                localStorage.setItem(`marksData_${currentUser}`, JSON.stringify(dataToSave));
             }
 
             // Load game state
@@ -890,6 +1071,7 @@
                 updateUI();
                 updateBackground();
                 renderTasks();
+                loadMarksData();
 
                 if (intervalId) {
                     clearInterval(intervalId);
@@ -1108,6 +1290,32 @@
                 renderTasks();
             }
 
+            // Graph Handlers
+            document.addEventListener('keydown', (e) => {
+                if (e.key.toLowerCase() === 't') {
+                    graphSidebar.classList.toggle('open');
+                }
+            });
+
+            addMarksBtn.addEventListener('click', () => {
+                marksInputPopup.style.display = 'block';
+                marksInput.value = '';
+            });
+
+            submitMarksBtn.addEventListener('click', () => {
+                const marks = parseInt(marksInput.value);
+                if (marks >= 0 && marks <= 300) {
+                    const currentDate = new Date().toLocaleDateString();
+                    marksData.labels.push(currentDate);
+                    marksData.datasets[0].data.push(marks);
+                    marksChart.update();
+                    saveMarksData();
+                    marksInputPopup.style.display = 'none';
+                } else {
+                    alert('Please enter marks between 0 and 300');
+                }
+            });
+
             // Targets popup handlers
             targetsBtn.addEventListener('click', () => {
                 targetsPopup.style.display = 'block';
@@ -1117,10 +1325,9 @@
                 targetsPopup.style.display = 'none';
             });
 
-            // Add event listeners to progress inputs
             document.querySelectorAll('.progress-input').forEach(input => {
                 input.addEventListener('input', handleProgressInput);
-                input.addEventListener('blur', handleProgressInput); // Update on blur as well
+                input.addEventListener('blur', handleProgressInput);
             });
 
             addTaskForm.addEventListener('submit', function(e) {
@@ -1160,6 +1367,7 @@
                 signoutBtn.style.display = 'block';
                 loadGameState();
                 loadSubjectProgress();
+                loadMarksData();
             } else {
                 mainContent.classList.add('blur');
                 signinOverlay.style.display = 'flex';
