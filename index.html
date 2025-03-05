@@ -197,17 +197,22 @@
         }
 
         .targets-table tr.class-row {
-            background-color: #2F2F2F; /* Darker gray for class headers */
+            background-color: #2F2F2F;
             font-weight: bold;
         }
 
         .targets-table tr.subject-row {
-            background-color: #3A3A3A; /* Slightly lighter gray for subjects */
+            background-color: #3A3A3A;
             font-weight: bold;
+            color: var(--primary-color); /* Green in forest mode */
+        }
+
+        body.starry-night .targets-table tr.subject-row {
+            color: #4682B4; /* Blue in starry night mode */
         }
 
         .targets-table tr.topic-row {
-            background-color: var(--task-bg); /* Consistent with task items */
+            background-color: var(--task-bg);
         }
 
         .targets-table td {
@@ -576,7 +581,7 @@
             height: 100%;
             pointer-events: none;
             z-index: -1;
-            display: none; /* Hidden by default */
+            display: none;
         }
 
         .star {
@@ -595,11 +600,11 @@
         }
 
         body.starry-night {
-            --primary-color: #4682B4; /* Starry blue */
-            --secondary-color: #2F5A78; /* Darker blue */
-            --accent-color: #FFDAB9; /* Moonlit peach */
-            --dark-bg: #0D1B2A; /* Starry gradient base */
-            background: radial-gradient(circle at center, #1B263B 0%, #0D1B2A 100%);
+            --primary-color: #4682B4;
+            --secondary-color: #2F5A78;
+            --accent-color: #FFDAB9;
+            --dark-bg: #0D1B2A;
+            background: url('https://static.vecteezy.com/system/resources/thumbnails/023/887/107/small/seamless-loop-galaxy-exploration-through-outer-space-towards-glowing-milky-way-galaxy-4k-looping-animation-of-flying-through-glowing-nebulae-clouds-and-stars-field-elements-free-video.jpg') no-repeat center center fixed;
             background-size: cover;
         }
 
@@ -613,11 +618,11 @@
         }
 
         body.starry-night #particles {
-            display: none; /* Hide particles in starry mode */
+            display: none;
         }
 
         body.starry-night .targets-btn:hover {
-            background-color: #e6b999; /* Adjusted for peach accent */
+            background-color: #e6b999;
         }
 
         body.starry-night button:hover {
@@ -1231,7 +1236,7 @@
 
             function updateBackground() {
                 if (document.body.classList.contains('starry-night')) {
-                    document.body.style.background = 'radial-gradient(circle at center, #1B263B 0%, #0D1B2A 100%)';
+                    document.body.style.background = "url('https://static.vecteezy.com/system/resources/thumbnails/023/887/107/small/seamless-loop-galaxy-exploration-through-outer-space-towards-glowing-milky-way-galaxy-4k-looping-animation-of-flying-through-glowing-nebulae-clouds-and-stars-field-elements-free-video.jpg') no-repeat center center fixed";
                     document.body.style.backgroundSize = 'cover';
                 } else {
                     document.body.style.backgroundImage = `url('${backgroundImages[gameState.level > 5 ? 5 : gameState.level]}')`;
