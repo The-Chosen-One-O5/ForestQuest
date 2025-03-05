@@ -463,7 +463,6 @@
             margin-top: 1rem;
         }
 
-        /* Graph Sidebar Styles */
         .graph-sidebar {
             position: fixed;
             top: 0;
@@ -771,7 +770,6 @@
         </table>
     </div>
 
-    <!-- Graph Sidebar -->
     <div class="graph-sidebar" id="graph-sidebar">
         <h2 class="graph-title">TEST GRAPH</h2>
         <div class="graph-container">
@@ -780,14 +778,14 @@
         <button class="add-marks-btn" id="add-marks-btn">+</button>
     </div>
 
-    <!-- Marks Input Popup -->
     <div class="marks-input-popup" id="marks-input-popup">
+        <label for="marks-name">Test Name:</label>
+        <input type="text" id="marks-name" placeholder="Enter test name...">
         <label for="marks-input">Enter your Marks (out of 300):</label>
         <input type="number" id="marks-input" min="0" max="300" placeholder="Enter marks...">
         <button id="submit-marks-btn">Submit</button>
     </div>
 
-    <!-- Sign-In Overlay -->
     <div class="signin-overlay" id="signin-overlay">
         <div class="signin-box">
             <h2>Sign In</h2>
@@ -836,7 +834,6 @@
             const mainContent = document.querySelector('.main-content');
             const signoutBtn = document.getElementById('signout-btn');
 
-            // Graph Elements
             const graphSidebar = document.getElementById('graph-sidebar');
             const addMarksBtn = document.getElementById('add-marks-btn');
             const marksInputPopup = document.getElementById('marks-input-popup');
@@ -854,7 +851,6 @@
 
             let intervalId = null;
 
-            // Graph Data
             let marksData = {
                 labels: [],
                 datasets: [{
@@ -863,7 +859,9 @@
                     borderColor: 'rgba(75, 192, 192, 1)',
                     backgroundColor: 'rgba(75, 192, 192, 0.2)',
                     fill: false,
-                    tension: 0.1
+                    tension: 0.1,
+                    pointRadius: 5,
+                    pointHoverRadius: 8
                 }]
             };
 
@@ -892,7 +890,7 @@
                         x: {
                             title: {
                                 display: true,
-                                text: 'Date',
+                                text: 'Test',
                                 color: '#FFFFFF'
                             },
                             ticks: {
@@ -908,12 +906,24 @@
                             labels: {
                                 color: '#FFFFFF'
                             }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `Marks: ${context.parsed.y} (${marksData.labels[context.dataIndex]})`;
+                                }
+                            }
+                        }
+                    },
+                    onClick: (event, elements) => {
+                        if (elements.length > 0) {
+                            const index = elements[0].index;
+                            showDeleteButton(index);
                         }
                     }
                 }
             });
 
-            // User Management
             function loadUsers() {
                 const users = localStorage.getItem('forestQuestUsers');
                 return users ? JSON.parse(users) : {};
@@ -992,7 +1002,6 @@
 
             signoutBtn.addEventListener('click', signOut);
 
-            // Load subject progress
             function loadSubjectProgress() {
                 if (!currentUser) return;
                 const savedProgress = localStorage.getItem(`subjectProgress_${currentUser}`);
@@ -1031,7 +1040,6 @@
                 updateSubjectProgressBars();
             }
 
-            // Load marks data
             function loadMarksData() {
                 if (!currentUser) return;
                 const savedMarks = localStorage.getItem(`marksData_${currentUser}`);
@@ -1052,7 +1060,6 @@
                 localStorage.setItem(`marksData_${currentUser}`, JSON.stringify(dataToSave));
             }
 
-            // Load game state
             function loadGameState() {
                 if (!currentUser) return;
                 const savedState = localStorage.getItem(`forestQuestState_${currentUser}`);
@@ -1290,7 +1297,46 @@
                 renderTasks();
             }
 
-            // Graph Handlers
+            function showDeleteButton(index) {
+                const existingButton = document.querySelector('.delete-graph-point');
+                if (existingButton) existingButton.remove();
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.textContent = 'Delete Point';
+                deleteBtn.className = 'delete-graph-point';
+                deleteBtn.style.position = 'absolute';
+                deleteBtn.style.backgroundColor = 'var(--delete-color)';
+                deleteBtn.style.padding = '0.5rem 1rem';
+                deleteBtn.style.border = 'none';
+                deleteBtn.style.borderRadius = '5px';
+                deleteBtn.style.cursor = 'pointer';
+                deleteBtn.style.zIndex = '104';
+
+                const canvas = document.getElementById('marksGraph');
+                const rect = canvas.getBoundingClientRect();
+                const x = marksChart.getDatasetMeta(0).data[index].x + rect.left;
+                const y = marksChart.getDatasetMeta(0).data[index].y + rect.top;
+                deleteBtn.style.left = `${x}px`;
+                deleteBtn.style.top = `${y - 40}px`;
+
+                deleteBtn.addEventListener('click', () => {
+                    marksData.labels.splice(index, 1);
+                    marksData.datasets[0].data.splice(index, 1);
+                    marksChart.update();
+                    saveMarksData();
+                    deleteBtn.remove();
+                });
+
+                document.body.appendChild(deleteBtn);
+
+                document.addEventListener('click', function handler(e) {
+                    if (!deleteBtn.contains(e.target) && e.target !== canvas) {
+                        deleteBtn.remove();
+                        document.removeEventListener('click', handler);
+                    }
+                }, { once: true });
+            }
+
             document.addEventListener('keydown', (e) => {
                 if (e.key.toLowerCase() === 't') {
                     graphSidebar.classList.toggle('open');
@@ -1300,23 +1346,25 @@
             addMarksBtn.addEventListener('click', () => {
                 marksInputPopup.style.display = 'block';
                 marksInput.value = '';
+                document.getElementById('marks-name').value = '';
             });
 
             submitMarksBtn.addEventListener('click', () => {
                 const marks = parseInt(marksInput.value);
+                const testName = document.getElementById('marks-name').value.trim() || new Date().toLocaleDateString();
                 if (marks >= 0 && marks <= 300) {
-                    const currentDate = new Date().toLocaleDateString();
-                    marksData.labels.push(currentDate);
+                    marksData.labels.push(testName);
                     marksData.datasets[0].data.push(marks);
                     marksChart.update();
                     saveMarksData();
                     marksInputPopup.style.display = 'none';
+                    document.getElementById('marks-name').value = '';
+                    marksInput.value = '';
                 } else {
                     alert('Please enter marks between 0 and 300');
                 }
             });
 
-            // Targets popup handlers
             targetsBtn.addEventListener('click', () => {
                 targetsPopup.style.display = 'block';
             });
@@ -1358,7 +1406,6 @@
             deadlineDateInput.value = today.toISOString().split('T')[0];
             deadlineTimeInput.value = '23:59';
 
-            // Initial Setup
             const signedInUser = loadSignedInUser();
             if (signedInUser) {
                 currentUser = signedInUser;
