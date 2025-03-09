@@ -629,6 +629,55 @@
             background-color: var(--secondary-color);
         }
 
+        /* Schedule Table Styles */
+        .schedule-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(40, 40, 40, 0.95); /* Dark background */
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            max-height: 80vh;
+            overflow-y: auto;
+            width: 90%;
+            max-width: 800px;
+            z-index: 101;
+            display: none;
+        }
+
+        .schedule-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            color: var(--primary-color); /* Green text */
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+
+        .schedule-table {
+            width: 100%;
+            border-collapse: collapse;
+            color: var(--primary-color); /* Green text */
+        }
+
+        .schedule-table th {
+            background-color: #1A1A1A; /* Black header */
+            padding: 0.75rem;
+            text-align: left;
+            font-weight: bold;
+            border-bottom: 2px solid var(--primary-color); /* Green border */
+        }
+
+        .schedule-table td {
+            background-color: #2F4F4F; /* Light-medium green */
+            padding: 0.75rem;
+            border-bottom: 1px solid #444;
+        }
+
         @keyframes levelUpAnim {
             0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
             50% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
@@ -860,6 +909,112 @@
         </table>
     </div>
 
+    <div class="schedule-popup" id="schedule-popup">
+        <button class="schedule-close" id="schedule-close">X</button>
+        <table class="schedule-table">
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>Activity</th>
+                    <th>Duration</th>
+                    <th>Notes</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>8:00 - 8:30 AM</td>
+                    <td>Pre-Sun Prep</td>
+                    <td>30 min</td>
+                    <td>Stretch by window, sip water, review notes. Diffuse light warm-up.</td>
+                </tr>
+                <tr>
+                    <td>8:30 - 9:00 AM</td>
+                    <td>Suntime Ritual</td>
+                    <td>30 min</td>
+                    <td>Direct rays at window—coffee, music, bask. Step out if clouds block.</td>
+                </tr>
+                <tr>
+                    <td>9:00 - 10:30 AM</td>
+                    <td>Study Block 1 (Problem-Solving)</td>
+                    <td>1 hr 30 min</td>
+                    <td>Deep study by window—diffuse light. Focus on problem sets or tough stuff.</td>
+                </tr>
+                <tr>
+                    <td>10:30 - 10:45 AM</td>
+                    <td>Breakfast + Sun Snipe</td>
+                    <td>15 min</td>
+                    <td>Quick meal (toast, fruit) + 5-10 min outside in sun.</td>
+                </tr>
+                <tr>
+                    <td>10:45 - 11:00 AM</td>
+                    <td>Transition/Buffer</td>
+                    <td>15 min</td>
+                    <td>Walk to lecture spot, grab stuff—light stretch if nearby.</td>
+                </tr>
+                <tr>
+                    <td>11:00 AM - 3:00 PM</td>
+                    <td>Lecture (Compulsory)</td>
+                    <td>4 hrs</td>
+                    <td>Class time—counts as study. Hopefully near a window or outdoors!</td>
+                </tr>
+                <tr>
+                    <td>3:00 - 3:30 PM</td>
+                    <td>Lunch + Park Sun Raid</td>
+                    <td>30 min</td>
+                    <td>Eat fast (sandwich, rice) + 10-15 min park walk for direct rays.</td>
+                </tr>
+                <tr>
+                    <td>3:30 - 5:00 PM</td>
+                    <td>Study Block 2 (Problem-Solving)</td>
+                    <td>1 hr 30 min</td>
+                    <td>By window—diffuse light. More problem sets or review lecture notes.</td>
+                </tr>
+                <tr>
+                    <td>5:00 - 5:30 PM</td>
+                    <td>Dinner Break</td>
+                    <td>30 min</td>
+                    <td>Warm meal (soup, pasta) by window—open it if sun’s still up.</td>
+                </tr>
+                <tr>
+                    <td>5:30 - 6:30 PM</td>
+                    <td>Rest</td>
+                    <td>1 hr</td>
+                    <td>Nap, scroll phone, chill by window—recharge with diffuse light/air.</td>
+                </tr>
+                <tr>
+                    <td>6:30 - 8:30 PM</td>
+                    <td>Study Block 3 (Self-Study)</td>
+                    <td>2 hrs</td>
+                    <td>By window—diffuse fading. Review, read, or lighter study tasks.</td>
+                </tr>
+                <tr>
+                    <td>8:30 - 8:45 PM</td>
+                    <td>Quick Stretch Break</td>
+                    <td>15 min</td>
+                    <td>Pace by window, snack (nuts, chocolate)—shake off stiffness.</td>
+                </tr>
+                <tr>
+                    <td>8:45 - 10:15 PM</td>
+                    <td>Study Block 4 (Problem-Solving)</td>
+                    <td>1 hr 30 min</td>
+                    <td>Window spot, artificial light—tackle problems or wrap up lecture prep.</td>
+                </tr>
+                <tr>
+                    <td>10:15 - 10:30 PM</td>
+                    <td>Wind-Down</td>
+                    <td>15 min</td>
+                    <td>Music, deep breaths by window—GABA vibes to relax.</td>
+                </tr>
+                <tr>
+                    <td>10:30 PM - 1:00 AM</td>
+                    <td>Flex Time (Optional Study/Rest)</td>
+                    <td>2 hrs 30 min</td>
+                    <td>Extra problem-solving (up to 12 hrs total study) or sleep prep.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
     <div class="graph-sidebar" id="graph-sidebar">
         <h2 class="graph-title">TEST GRAPH</h2>
         <div class="graph-container">
@@ -916,6 +1071,8 @@
             const targetsBtn = document.getElementById('targets-btn');
             const targetsPopup = document.getElementById('targets-popup');
             const targetsClose = document.getElementById('targets-close');
+            const schedulePopup = document.getElementById('schedule-popup');
+            const scheduleClose = document.getElementById('schedule-close');
             const signinOverlay = document.getElementById('signin-overlay');
             const signinBtn = document.getElementById('signin-btn');
             const usernameInput = document.getElementById('username');
@@ -924,7 +1081,6 @@
             const signinError = document.getElementById('signin-error');
             const mainContent = document.querySelector('.main-content');
             const signoutBtn = document.getElementById('signout-btn');
-
             const graphSidebar = document.getElementById('graph-sidebar');
             const addMarksBtn = document.getElementById('add-marks-btn');
             const marksInputPopup = document.getElementById('marks-input-popup');
@@ -1414,62 +1570,50 @@
                 updateBackground();
             }
 
-            function checkDeadlines() {
-                let penalty = false;
-                
-                for (let [id, task] of gameState.tasks) {
-                    if (isPastDeadline(task.deadline)) {
-                        penalty = true;
+            function checkDeadlines() {            function checkDeadlines() {
+                const now = new Date();
+                gameState.tasks.forEach(task => {
+                    if (new Date(task.deadline) < now && !taskListElement.querySelector(`[data-id="${task.id}"]`)?.classList.contains('overdue')) {
+                        renderTasks();
                     }
-                }
-                
-                if (penalty) {
-                    removeCoins(50);
-                    updateUI();
-                }
-                
-                renderTasks();
-            }
-
-            function showDeleteButton(index) {
-                const existingButton = document.querySelector('.delete-graph-point');
-                if (existingButton) existingButton.remove();
-
-                const deleteBtn = document.createElement('button');
-                deleteBtn.textContent = 'Delete Point';
-                deleteBtn.className = 'delete-graph-point';
-                deleteBtn.style.position = 'absolute';
-                deleteBtn.style.backgroundColor = 'var(--delete-color)';
-                deleteBtn.style.padding = '0.5rem 1rem';
-                deleteBtn.style.border = 'none';
-                deleteBtn.style.borderRadius = '5px';
-                deleteBtn.style.cursor = 'pointer';
-                deleteBtn.style.zIndex = '104';
-
-                const canvas = document.getElementById('marksGraph');
-                const rect = canvas.getBoundingClientRect();
-                const x = marksChart.getDatasetMeta(0).data[index].x + rect.left;
-                const y = marksChart.getDatasetMeta(0).data[index].y + rect.top;
-                deleteBtn.style.left = `${x}px`;
-                deleteBtn.style.top = `${y - 40}px`;
-
-                deleteBtn.addEventListener('click', () => {
-                    marksData.labels.splice(index, 1);
-                    marksData.datasets[0].data.splice(index, 1);
-                    marksChart.update();
-                    saveMarksData();
-                    deleteBtn.remove();
                 });
-
-                document.body.appendChild(deleteBtn);
-
-                document.addEventListener('click', function handler(e) {
-                    if (!deleteBtn.contains(e.target) && e.target !== canvas) {
-                        deleteBtn.remove();
-                        document.removeEventListener('click', handler);
-                    }
-                }, { once: true });
             }
+
+            addTaskForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const taskName = taskNameInput.value.trim();
+                const deadlineDate = deadlineDateInput.value;
+                const deadlineTime = deadlineTimeInput.value;
+
+                if (taskName && deadlineDate && deadlineTime) {
+                    const deadline = new Date(`${deadlineDate}T${deadlineTime}`).toISOString();
+                    addTask(taskName, deadline);
+                    taskNameInput.value = '';
+                    deadlineDateInput.value = '';
+                    deadlineTimeInput.value = '';
+                }
+            });
+
+            levelUpOkButton.addEventListener('click', () => {
+                levelUpPopup.style.display = 'none';
+            });
+
+            targetsBtn.addEventListener('click', () => {
+                targetsPopup.style.display = 'block';
+                updateSubjectProgressBars();
+            });
+
+            targetsClose.addEventListener('click', () => {
+                targetsPopup.style.display = 'none';
+            });
+
+            scheduleClose.addEventListener('click', () => {
+                schedulePopup.style.display = 'none';
+            });
+
+            document.querySelectorAll('.progress-input').forEach(input => {
+                input.addEventListener('change', handleProgressInput);
+            });
 
             document.addEventListener('keydown', (e) => {
                 if (e.key.toLowerCase() === 'o') {
@@ -1480,76 +1624,60 @@
                     const existingButton = document.querySelector('.delete-graph-point');
                     if (existingButton) existingButton.remove();
                 }
+                if (e.key.toLowerCase() === 'p') {
+                    schedulePopup.style.display = schedulePopup.style.display === 'block' ? 'none' : 'block';
+                }
             });
 
             addMarksBtn.addEventListener('click', () => {
                 marksInputPopup.style.display = 'block';
-                marksInput.value = '';
-                document.getElementById('marks-name').value = '';
             });
 
             submitMarksBtn.addEventListener('click', () => {
                 const marks = parseInt(marksInput.value);
-                const testName = document.getElementById('marks-name').value.trim() || new Date().toLocaleDateString();
-                if (marks >= 0 && marks <= 300) {
+                const testName = document.getElementById('marks-name').value.trim() || `Test ${marksData.labels.length + 1}`;
+                if (!isNaN(marks) && marks >= 0 && marks <= 300) {
                     marksData.labels.push(testName);
                     marksData.datasets[0].data.push(marks);
                     marksChart.update();
                     saveMarksData();
                     marksInputPopup.style.display = 'none';
-                    document.getElementById('marks-name').value = '';
                     marksInput.value = '';
-                } else {
-                    alert('Please enter marks between 0 and 300');
+                    document.getElementById('marks-name').value = '';
                 }
             });
 
             cancelMarksBtn.addEventListener('click', () => {
                 marksInputPopup.style.display = 'none';
-                document.getElementById('marks-name').value = '';
                 marksInput.value = '';
+                document.getElementById('marks-name').value = '';
             });
 
-            targetsBtn.addEventListener('click', () => {
-                targetsPopup.style.display = 'block';
-            });
+            function showDeleteButton(index) {
+                const existingButton = document.querySelector('.delete-graph-point');
+                if (existingButton) existingButton.remove();
 
-            targetsClose.addEventListener('click', () => {
-                targetsPopup.style.display = 'none';
-            });
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = 'Delete Point';
+                deleteButton.className = 'delete-graph-point';
+                deleteButton.style.backgroundColor = 'var(--delete-color)';
+                deleteButton.style.marginTop = '1rem';
+                deleteButton.style.padding = '0.5rem 1rem';
+                deleteButton.style.borderRadius = '5px';
+                deleteButton.style.border = 'none';
+                deleteButton.style.cursor = 'pointer';
+                deleteButton.style.color = '#FFFFFF';
 
-            document.querySelectorAll('.progress-input').forEach(input => {
-                input.addEventListener('input', handleProgressInput);
-                input.addEventListener('blur', handleProgressInput);
-            });
+                deleteButton.addEventListener('click', () => {
+                    marksData.labels.splice(index, 1);
+                    marksData.datasets[0].data.splice(index, 1);
+                    marksChart.update();
+                    saveMarksData();
+                    deleteButton.remove();
+                });
 
-            addTaskForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                const name = taskNameInput.value.trim();
-                const deadlineDate = deadlineDateInput.value;
-                const deadlineTime = deadlineTimeInput.value;
-                
-                if (!name || !deadlineDate || !deadlineTime) return;
-                
-                const deadline = new Date(`${deadlineDate}T${deadlineTime}`).toISOString();
-                
-                addTask(name, deadline);
-                
-                taskNameInput.value = '';
-                
-                const tomorrow = new Date();
-                tomorrow.setDate(tomorrow.getDate() + 1);
-                deadlineDateInput.value = tomorrow.toISOString().split('T')[0];
-            });
-
-            levelUpOkButton.addEventListener('click', function() {
-                levelUpPopup.style.display = 'none';
-            });
-
-            const today = new Date();
-            deadlineDateInput.value = today.toISOString().split('T')[0];
-            deadlineTimeInput.value = '23:59';
+                graphSidebar.appendChild(deleteButton);
+            }
 
             const signedInUser = loadSignedInUser();
             if (signedInUser) {
@@ -1565,11 +1693,7 @@
                 signinOverlay.style.display = 'flex';
             }
 
-            window.addEventListener('beforeunload', () => {
-                if (intervalId) {
-                    clearInterval(intervalId);
-                }
-            });
+            checkDeadlines();
         });
     </script>
 </body>
