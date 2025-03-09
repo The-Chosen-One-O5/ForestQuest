@@ -204,11 +204,11 @@
         .targets-table tr.subject-row {
             background-color: #3A3A3A;
             font-weight: bold;
-            color: var(--primary-color); /* Green in forest mode */
+            color: var(--primary-color);
         }
 
         body.starry-night .targets-table tr.subject-row {
-            color: #4682B4; /* Blue in starry night mode */
+            color: #4682B4;
         }
 
         .targets-table tr.topic-row {
@@ -544,7 +544,54 @@
             width: 100%;
         }
 
-        /* Particle Styles */
+        .schedule-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(40, 40, 40, 0.95);
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            max-height: 80vh;
+            overflow-y: auto;
+            width: 90%;
+            max-width: 800px;
+            z-index: 101;
+            display: none;
+        }
+
+        .schedule-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            color: var(--primary-color);
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+
+        .schedule-table {
+            width: 100%;
+            border-collapse: collapse;
+            color: var(--primary-color);
+        }
+
+        .schedule-table th {
+            background-color: #1A1A1A;
+            padding: 0.75rem;
+            text-align: left;
+            font-weight: bold;
+            border-bottom: 2px solid var(--primary-color);
+        }
+
+        .schedule-table td {
+            background-color: #2F4F4F;
+            padding: 0.75rem;
+            border-bottom: 1px solid #444;
+        }
+
         #particles {
             position: fixed;
             top: 0;
@@ -572,7 +619,6 @@
             100% { transform: translateY(-10vh); opacity: 0; }
         }
 
-        /* Starry Night Mode Styles */
         #stars {
             position: fixed;
             top: 0;
@@ -627,55 +673,6 @@
 
         body.starry-night button:hover {
             background-color: var(--secondary-color);
-        }
-
-        /* Schedule Table Styles */
-        .schedule-popup {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: rgba(40, 40, 40, 0.95); /* Dark background */
-            padding: 1.5rem;
-            border-radius: 10px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            max-height: 80vh;
-            overflow-y: auto;
-            width: 90%;
-            max-width: 800px;
-            z-index: 101;
-            display: none;
-        }
-
-        .schedule-close {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: none;
-            border: none;
-            color: var(--primary-color); /* Green text */
-            font-size: 1.2rem;
-            cursor: pointer;
-        }
-
-        .schedule-table {
-            width: 100%;
-            border-collapse: collapse;
-            color: var(--primary-color); /* Green text */
-        }
-
-        .schedule-table th {
-            background-color: #1A1A1A; /* Black header */
-            padding: 0.75rem;
-            text-align: left;
-            font-weight: bold;
-            border-bottom: 2px solid var(--primary-color); /* Green border */
-        }
-
-        .schedule-table td {
-            background-color: #2F4F4F; /* Light-medium green */
-            padding: 0.75rem;
-            border-bottom: 1px solid #444;
         }
 
         @keyframes levelUpAnim {
@@ -1071,8 +1068,6 @@
             const targetsBtn = document.getElementById('targets-btn');
             const targetsPopup = document.getElementById('targets-popup');
             const targetsClose = document.getElementById('targets-close');
-            const schedulePopup = document.getElementById('schedule-popup');
-            const scheduleClose = document.getElementById('schedule-close');
             const signinOverlay = document.getElementById('signin-overlay');
             const signinBtn = document.getElementById('signin-btn');
             const usernameInput = document.getElementById('username');
@@ -1087,6 +1082,8 @@
             const marksInput = document.getElementById('marks-input');
             const submitMarksBtn = document.getElementById('submit-marks-btn');
             const cancelMarksBtn = document.getElementById('cancel-marks-btn');
+            const schedulePopup = document.getElementById('schedule-popup');
+            const scheduleClose = document.getElementById('schedule-close');
 
             const backgroundImages = {
                 0: 'https://assets.grok.com/users/61aa03d5-34a6-451f-a29b-c678af050623/7qqe1265AFQU0oyA-generated_image.jpg',
@@ -1172,7 +1169,6 @@
                 }
             });
 
-            // Particle Generation
             function createParticles() {
                 const particleContainer = document.getElementById('particles');
                 const particleCount = 50;
@@ -1185,7 +1181,6 @@
                 }
             }
 
-            // Star Generation
             function createStars() {
                 const starContainer = document.getElementById('stars');
                 const starCount = 100;
@@ -1199,13 +1194,11 @@
                 }
             }
 
-            // Starry Night Toggle
             function toggleStarryNight() {
                 document.body.classList.toggle('starry-night');
                 updateBackground();
             }
 
-            // Initialize particles and stars
             createParticles();
             createStars();
 
@@ -1570,50 +1563,62 @@
                 updateBackground();
             }
 
-            function checkDeadlines() {            function checkDeadlines() {
-                const now = new Date();
-                gameState.tasks.forEach(task => {
-                    if (new Date(task.deadline) < now && !taskListElement.querySelector(`[data-id="${task.id}"]`)?.classList.contains('overdue')) {
-                        renderTasks();
+            function checkDeadlines() {
+                let penalty = false;
+                
+                for (let [id, task] of gameState.tasks) {
+                    if (isPastDeadline(task.deadline)) {
+                        penalty = true;
                     }
-                });
+                }
+                
+                if (penalty) {
+                    removeCoins(50);
+                    updateUI();
+                }
+                
+                renderTasks();
             }
 
-            addTaskForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                const taskName = taskNameInput.value.trim();
-                const deadlineDate = deadlineDateInput.value;
-                const deadlineTime = deadlineTimeInput.value;
+            function showDeleteButton(index) {
+                const existingButton = document.querySelector('.delete-graph-point');
+                if (existingButton) existingButton.remove();
 
-                if (taskName && deadlineDate && deadlineTime) {
-                    const deadline = new Date(`${deadlineDate}T${deadlineTime}`).toISOString();
-                    addTask(taskName, deadline);
-                    taskNameInput.value = '';
-                    deadlineDateInput.value = '';
-                    deadlineTimeInput.value = '';
-                }
-            });
+                const deleteBtn = document.createElement('button');
+                deleteBtn.textContent = 'Delete Point';
+                deleteBtn.className = 'delete-graph-point';
+                deleteBtn.style.position = 'absolute';
+                deleteBtn.style.backgroundColor = 'var(--delete-color)';
+                deleteBtn.style.padding = '0.5rem 1rem';
+                deleteBtn.style.border = 'none';
+                deleteBtn.style.borderRadius = '5px';
+                deleteBtn.style.cursor = 'pointer';
+                deleteBtn.style.zIndex = '104';
 
-            levelUpOkButton.addEventListener('click', () => {
-                levelUpPopup.style.display = 'none';
-            });
+                const canvas = document.getElementById('marksGraph');
+                const rect = canvas.getBoundingClientRect();
+                const x = marksChart.getDatasetMeta(0).data[index].x + rect.left;
+                const y = marksChart.getDatasetMeta(0).data[index].y + rect.top;
+                deleteBtn.style.left = `${x}px`;
+                deleteBtn.style.top = `${y - 40}px`;
 
-            targetsBtn.addEventListener('click', () => {
-                targetsPopup.style.display = 'block';
-                updateSubjectProgressBars();
-            });
+                deleteBtn.addEventListener('click', () => {
+                    marksData.labels.splice(index, 1);
+                    marksData.datasets[0].data.splice(index, 1);
+                    marksChart.update();
+                    saveMarksData();
+                    deleteBtn.remove();
+                });
 
-            targetsClose.addEventListener('click', () => {
-                targetsPopup.style.display = 'none';
-            });
+                document.body.appendChild(deleteBtn);
 
-            scheduleClose.addEventListener('click', () => {
-                schedulePopup.style.display = 'none';
-            });
-
-            document.querySelectorAll('.progress-input').forEach(input => {
-                input.addEventListener('change', handleProgressInput);
-            });
+                document.addEventListener('click', function handler(e) {
+                    if (!deleteBtn.contains(e.target) && e.target !== canvas) {
+                        deleteBtn.remove();
+                        document.removeEventListener('click', handler);
+                    }
+                }, { once: true });
+            }
 
             document.addEventListener('keydown', (e) => {
                 if (e.key.toLowerCase() === 'o') {
@@ -1631,53 +1636,76 @@
 
             addMarksBtn.addEventListener('click', () => {
                 marksInputPopup.style.display = 'block';
+                marksInput.value = '';
+                document.getElementById('marks-name').value = '';
             });
 
             submitMarksBtn.addEventListener('click', () => {
                 const marks = parseInt(marksInput.value);
-                const testName = document.getElementById('marks-name').value.trim() || `Test ${marksData.labels.length + 1}`;
-                if (!isNaN(marks) && marks >= 0 && marks <= 300) {
+                const testName = document.getElementById('marks-name').value.trim() || new Date().toLocaleDateString();
+                if (marks >= 0 && marks <= 300) {
                     marksData.labels.push(testName);
                     marksData.datasets[0].data.push(marks);
                     marksChart.update();
                     saveMarksData();
                     marksInputPopup.style.display = 'none';
-                    marksInput.value = '';
                     document.getElementById('marks-name').value = '';
+                    marksInput.value = '';
+                } else {
+                    alert('Please enter marks between 0 and 300');
                 }
             });
 
             cancelMarksBtn.addEventListener('click', () => {
                 marksInputPopup.style.display = 'none';
-                marksInput.value = '';
                 document.getElementById('marks-name').value = '';
+                marksInput.value = '';
             });
 
-            function showDeleteButton(index) {
-                const existingButton = document.querySelector('.delete-graph-point');
-                if (existingButton) existingButton.remove();
+            targetsBtn.addEventListener('click', () => {
+                targetsPopup.style.display = 'block';
+            });
 
-                const deleteButton = document.createElement('button');
-                deleteButton.textContent = 'Delete Point';
-                deleteButton.className = 'delete-graph-point';
-                deleteButton.style.backgroundColor = 'var(--delete-color)';
-                deleteButton.style.marginTop = '1rem';
-                deleteButton.style.padding = '0.5rem 1rem';
-                deleteButton.style.borderRadius = '5px';
-                deleteButton.style.border = 'none';
-                deleteButton.style.cursor = 'pointer';
-                deleteButton.style.color = '#FFFFFF';
+            targetsClose.addEventListener('click', () => {
+                targetsPopup.style.display = 'none';
+            });
 
-                deleteButton.addEventListener('click', () => {
-                    marksData.labels.splice(index, 1);
-                    marksData.datasets[0].data.splice(index, 1);
-                    marksChart.update();
-                    saveMarksData();
-                    deleteButton.remove();
-                });
+            scheduleClose.addEventListener('click', () => {
+                schedulePopup.style.display = 'none';
+            });
 
-                graphSidebar.appendChild(deleteButton);
-            }
+            document.querySelectorAll('.progress-input').forEach(input => {
+                input.addEventListener('input', handleProgressInput);
+                input.addEventListener('blur', handleProgressInput);
+            });
+
+            addTaskForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const name = taskNameInput.value.trim();
+                const deadlineDate = deadlineDateInput.value;
+                const deadlineTime = deadlineTimeInput.value;
+                
+                if (!name || !deadlineDate || !deadlineTime) return;
+                
+                const deadline = new Date(`${deadlineDate}T${deadlineTime}`).toISOString();
+                
+                addTask(name, deadline);
+                
+                taskNameInput.value = '';
+                
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                deadlineDateInput.value = tomorrow.toISOString().split('T')[0];
+            });
+
+            levelUpOkButton.addEventListener('click', function() {
+                levelUpPopup.style.display = 'none';
+            });
+
+            const today = new Date();
+            deadlineDateInput.value = today.toISOString().split('T')[0];
+            deadlineTimeInput.value = '23:59';
 
             const signedInUser = loadSignedInUser();
             if (signedInUser) {
@@ -1693,7 +1721,11 @@
                 signinOverlay.style.display = 'flex';
             }
 
-            checkDeadlines();
+            window.addEventListener('beforeunload', () => {
+                if (intervalId) {
+                    clearInterval(intervalId);
+                }
+            });
         });
     </script>
 </body>
