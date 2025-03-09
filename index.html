@@ -1,3 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forest Quest</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-color: #32CD32;
+            --secondary-color: #228B22;
+            --accent-color: #FFD700;
+            --background-dark: #1A1A1A;
+            --delete-color: #FF4500;
+            --transition-time: 0.3s;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: url('https://assets.grok.com/users/61aa03d5-34a6-451f-a29b-c678af050623/7qqe1265AFQU0oyA-generated_image.jpg') no-repeat center center fixed;
+            background-size: cover;
+            color: #fff;
+            line-height: 1.6;
+            transition: background var(--transition-time) ease;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .leaf-icon {
+            width: 40px;
+            height: 40px;
+        }
+
+        .coin-icon {
+            width: 30px;
+            height: 30px;
+        }
+
+        p {
+            font-size: 1.2rem;
+            color: #ddd;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 2rem;
+            background: rgba(40, 40, 40, 0.8);
+            padding: 1rem;
+            border-radius: 10px;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            margin-top: 0.5rem;
+        }
+
+        .level-progress {
+            background: #333;
+            height: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--primary-color);
+            transition: width var(--transition-time) ease;
+        }
+
+        .add-task {
+            background: rgba(40, 40, 40, 0.8);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+        }
+
+        .add-task h2 {
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+        }
+
+        .add-task-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .deadline-inputs {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        input[type="text"],
+        input[type="date"],
+        input[type="time"],
+        input[type="number"] {
+            padding: 0.5rem;
+            border: none;
+            border-radius: 5px;
+            background: #fff;
+            color: #000;
+            font-size: 1rem;
+        }
+
+        button {
+            padding: 0.75rem 1.5rem;
+            background: var(--secondary-color);
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color var(--transition-time) ease, transform var(--transition-time) ease;
+        }
+
+        button:hover {
+            background: var(--primary-color);
+            transform: translateY(-2px);
+        }
+
+        .targets-btn {
+            display: block;
+            margin: 0 auto 2rem;
+            background: var(--accent-color);
+            color: #000;
+        }
+
+        .targets-btn:hover {
+            background: #e6c200;
+        }
+
+        .task-list {
+            list-style: none;
+            background: rgba(40, 40, 40, 0.8);
+            padding: 1rem;
+            border-radius: 10px;
+        }
+
+        .task-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid #444;
+            transition: background var(--transition-time) ease;
+        }
+
+        .task-item:last-child {
+            border-bottom: none;
+        }
+
+        .task-details {
+            flex: 1;
+        }
+
+        .task-name {
+            font-size: 1.2rem;
+            color: #fff;
+        }
+
+        .task-deadline {
+            font-size: 0.9rem;
+            color: #ddd;
+        }
+
+        .task-deadline.urgent {
+            color: #FFD700;
+        }
+
+        .task-progress {
+            width: 100%;
+            height: 8px;
+            background: #333;
+            border-radius: 4px;
+            margin-top: 0.5rem;
+            overflow: hidden;
+        }
+
+        .task-progress-bar {
+            height: 100%;
+            background: var(--primary-color);
+            transition: width var(--transition-time) ease;
+        }
+
+        .task-item.overdue {
+            background: rgba(255, 69, 0, 0.2);
+        }
+
+        .task-item.overdue .task-deadline {
+            color: var(--delete-color);
+        }
+
+        .task-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .complete-btn {
+            background: var(--primary-color);
+        }
+
+        .complete-btn:hover {
+            background: #228B22;
+        }
+
+        .delete-btn {
+            background: var(--delete-color);
+        }
+
+        .delete-btn:hover {
+            background: #CC3700;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #888;
+            padding: 2rem;
+        }
+
+        .level-up {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(40, 40, 40, 0.95);
+            padding: 2rem;
+            border-radius: 10px;
+            text-align: center;
+            z-index: 100;
+            display: none;
+        }
+
+        .level-up h2 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .level-up p {
+            margin-bottom: 1rem;
+        }
+
+        .coin-animation {
+            animation: coinPulse 0.5s ease;
+        }
+
+        @keyframes coinPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        .targets-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+            max-width: 800px;
+            max-height: 80vh;
+            background: rgba(40, 40, 40, 0.95);
+            padding: 2rem;
+            border-radius: 10px;
+            z-index: 101;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .targets-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .targets-table {
+            width: 100%;
+            border-collapse: collapse;
+            color: var(--primary-color);
+        }
+
+        .targets-table td {
+            padding: 0.5rem;
+            border-bottom: 1px solid #444;
+        }
+
+        .class-row td {
+            background: #333;
+            font-weight: bold;
+            font-size: 1.2rem;
+            padding: 0.75rem;
+        }
+
+        .subject-row td {
+            background: #2A2A2A;
+            font-weight: bold;
+            padding: 0.75rem;
+        }
+
+        .topic-row td:first-child {
+            width: 60%;
+        }
+
+        .subject-progress {
+            width: 100%;
+            height: 10px;
+            background: #333;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .subject-progress-bar {
+            height: 100%;
+            background: var(--primary-color);
+            transition: width var(--transition-time) ease;
+        }
+
+        .progress-input {
+            width: 60px;
+            padding: 0.25rem;
+            margin-left: 0.5rem;
+            background: #fff;
+            color: #000;
+        }
+
+        .schedule-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+            max-width: 800px;
+            max-height: 80vh;
+            background: rgba(40, 40, 40, 0.95);
+            padding: 2rem;
+            border-radius: 10px;
+            z-index: 101;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .schedule-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .schedule-table {
+            width: 100%;
+            border-collapse: collapse;
+            color: var(--primary-color);
+        }
+
+        .schedule-table th {
+            background-color: #1A1A1A; /* Dark header */
+            padding: 0.75rem;
+            text-align: left;
+        }
+
+        .schedule-table td {
+            background-color: #1A1A1A; /* Black background */
+            padding: 0.75rem;
+            border-bottom: 1px solid #444;
+        }
+
+        .graph-sidebar {
+            position: fixed;
+            right: -300px;
+            top: 0;
+            width: 300px;
+            height: 100%;
+            background: rgba(40, 40, 40, 0.95);
+            padding: 1rem;
+            transition: right var(--transition-time) ease;
+            z-index: 103;
+        }
+
+        .graph-sidebar.open {
+            right: 0;
+        }
+
+        .graph-title {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .graph-container {
+            background: #1A1A1A;
+            padding: 1rem;
+            border-radius: 10px;
+        }
+
+        .add-marks-btn {
+            position: absolute;
+            bottom: 1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--accent-color);
+            color: #000;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+        }
+
+        .add-marks-btn:hover {
+            background: #e6c200;
+        }
+
+        .marks-input-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(40, 40, 40, 0.95);
+            padding: 1.5rem;
+            border-radius: 10px;
+            z-index: 102;
+            display: none;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .marks-input-popup label {
+            color: var(--primary-color);
+        }
+
+        .blur {
+            filter: blur(5px);
+            pointer-events: none;
+        }
+
+        .signin-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .signin-box {
+            background: rgba(40, 40, 40, 0.95);
+            padding: 2rem;
+            border-radius: 10px;
+            text-align: center;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        .signin-box h2 {
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+        }
+
+        .signin-box input {
+            display: block;
+            width: 100%;
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 5px;
+            background: #fff;
+            color: #000;
+        }
+
+        .signin-box label {
+            color: #ddd;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .signin-error {
+            color: var(--delete-color);
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .signout-btn {
+            position: absolute;
+            top: 1.5rem;
+            left: 1.5rem;
+            background: var(--delete-color);
+        }
+
+        .signout-btn:hover {
+            background: #CC3700;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.5);
+            animation: float 5s infinite ease-in-out;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: #fff;
+            border-radius: 50%;
+            animation: twinkle 2s infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.2; }
+            50% { opacity: 1; }
+        }
+
+        body.starry-night {
+            background: url('https://static.vecteezy.com/system/resources/thumbnails/023/887/107/small/seamless-loop-galaxy-exploration-through-outer-space-towards-glowing-milky-way-galaxy-4k-looping-animation-of-flying-through-glowing-nebulae-clouds-and-stars-field-elements-free-video.jpg') no-repeat center center fixed;
+            background-size: cover;
+        }
+
+        /* Notepad Button */
+        .notepad-btn {
+            position: absolute;
+            right: 1.5rem;
+            top: 1.5rem;
+            padding: 0.5rem 1rem;
+            background-color: var(--accent-color);
+            color: #000;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color var(--transition-time) ease, transform var(--transition-time) ease;
+        }
+
+        .notepad-btn:hover {
+            background-color: #e6c200;
+            transform: translateY(-2px);
+        }
+
+        /* Notepad Popup */
+        .notepad-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+            max-width: 500px;
+            background: #FFF8DC; /* Light yellow page color */
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            z-index: 101;
+            display: none;
+            border: 2px solid #8B4513; /* Brown border for notebook look */
+            background-image: linear-gradient(#000 1px, transparent 1px); /* Notebook lines */
+            background-size: 100% 1.5em;
+        }
+
+        .notepad-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            color: #8B4513; /* Brown */
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+
+        .notepad-title {
+            font-size: 1.5rem;
+            color: #8B4513; /* Brown */
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .notepad-form {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .notepad-form input[type="text"] {
+            flex: 1;
+            padding: 0.5rem;
+            border: 1px solid #8B4513;
+            border-radius: 5px;
+            background-color: #FFFFE0; /* Very light yellow */
+            color: #000;
+        }
+
+        .notepad-form button {
+            padding: 0.5rem 1rem;
+            background-color: #8B4513;
+            color: #FFF8DC;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .notepad-form button:hover {
+            background-color: #A0522D;
+        }
+
+        .notepad-list {
+            list-style: none;
+        }
+
+        .notepad-item {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #DAA520; /* Golden line */
+        }
+
+        .notepad-item input[type="checkbox"] {
+            margin-right: 0.5rem;
+        }
+
+        .notepad-item.completed {
+            color: #808080; /* Grey */
+            text-decoration: line-through;
+        }
+
+        .notepad-item span {
+            flex: 1;
+        }
+
+        .notepad-item button {
+            background-color: var(--delete-color);
+            padding: 0.25rem 0.5rem;
+            margin-left: 0.5rem;
+        }
+    </style>
+</head>
 <body>
     <div id="particles"></div>
     <div id="stars"></div>
@@ -550,6 +1247,17 @@
                 }
             }
 
+            signinBtn.addEventListener('click', () => {
+                const username = usernameInput.value.trim();
+                const password = passwordInput.value.trim();
+                const staySignedIn = staySignedInCheckbox.checked;
+                if (username && password) {
+                    signIn(username, password, staySignedIn);
+                }
+            });
+
+            signoutBtn.addEventListener('click', signOut);
+
             function loadSubjectProgress() {
                 if (!currentUser) return;
                 const savedProgress = localStorage.getItem(`subjectProgress_${currentUser}`);
@@ -942,17 +1650,6 @@
                     }
                 }, { once: true });
             }
-
-            signinBtn.addEventListener('click', () => {
-                const username = usernameInput.value.trim();
-                const password = passwordInput.value.trim();
-                const staySignedIn = staySignedInCheckbox.checked;
-                if (username && password) {
-                    signIn(username, password, staySignedIn);
-                }
-            });
-
-            signoutBtn.addEventListener('click', signOut);
 
             document.addEventListener('keydown', (e) => {
                 if (e.key.toLowerCase() === 'o') {
