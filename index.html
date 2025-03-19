@@ -759,10 +759,6 @@
                 <div>TASKS DONE</div>
                 <div class="stat-value" id="tasks-completed">0</div>
             </div>
-            <div class="stat">
-                <div>STREAK</div>
-                <div class="stat-value" id="streak">0</div>
-            </div>
         </div>
 
         <div>
@@ -779,14 +775,7 @@
                     <label for="task-name">Task Name:</label>
                     <input type="text" id="task-name" required placeholder="Enter task name...">
                 </div>
-                <div class="form-group">
-                    <label for="difficulty">Difficulty:</label>
-                    <select id="difficulty">
-                        <option value="easy">Easy (50 coins)</option>
-                        <option value="medium">Medium (100 coins)</option>
-                        <option value="hard">Hard (150 coins)</option>
-                    </select>
-                </div>
+
                 <div class="form-group">
                     <label for="deadline-date">Deadline:</label>
                     <div class="deadline-inputs">
@@ -794,19 +783,12 @@
                         <input type="time" id="deadline-time" required>
                     </div>
                 </div>
+
                 <button type="submit">Add Task</button>
             </form>
         </div>
 
         <button class="targets-btn" id="targets-btn">Targets</button>
-        <button class="targets-btn" id="shop-btn">Shop</button>
-        <button class="targets-btn" id="achievements-btn">Achievements</button>
-        <button class="targets-btn" id="knowledge-tree-btn">Toggle Knowledge Tree</button>
-
-        <div>
-            <h2>Daily Quests</h2>
-            <ul id="daily-quests" class="task-list"></ul>
-        </div>
 
         <div>
             <h2>Tasks</h2>
@@ -888,7 +870,6 @@
                 <tr class="topic-row"><td>Dual Nature of Matter and Radiation</td><td><div class="subject-progress" data-subject="Dual Nature of Matter and Radiation"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
                 <tr class="topic-row"><td>Atoms and Nuclei</td><td><div class="subject-progress" data-subject="Atoms and Nuclei"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
                 <tr class="topic-row"><td>Electronic Devices</td><td><div class="subject-progress" data-subject="Electronic Devices"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>Thermodynamics</td><td><div class="subject-progress" data-subject="Thermodynamics (Physics Class 12)"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
                 <!-- Chemistry -->
                 <tr class="subject-row"><td colspan="3">Chemistry</td></tr>
                 <tr class="topic-row"><td>Solid State</td><td><div class="subject-progress" data-subject="Solid State"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
@@ -907,7 +888,6 @@
                 <tr class="topic-row"><td>Biomolecules</td><td><div class="subject-progress" data-subject="Biomolecules"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
                 <tr class="topic-row"><td>Polymers</td><td><div class="subject-progress" data-subject="Polymers"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
                 <tr class="topic-row"><td>Chemistry in Everyday Life</td><td><div class="subject-progress" data-subject="Chemistry in Everyday Life"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>Reaction Mechanisms</td><td><div class="subject-progress" data-subject="Reaction Mechanisms"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
                 <!-- Mathematics -->
                 <tr class="subject-row"><td colspan="3">Mathematics</td></tr>
                 <tr class="topic-row"><td>Relations and Functions</td><td><div class="subject-progress" data-subject="Relations and Functions"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
@@ -928,11 +908,9 @@
 
     <div class="schedule-popup" id="schedule-popup">
         <button class="schedule-close" id="schedule-close">X</button>
-        <h2>Your Weekly Schedule (March 18 - 23, 2025)</h2>
         <table class="schedule-table">
             <thead>
                 <tr>
-                    <th>Day</th>
                     <th>Time</th>
                     <th>Activity</th>
                     <th>Duration</th>
@@ -940,175 +918,98 @@
                 </tr>
             </thead>
             <tbody>
-                <!-- Wednesday, March 18, 2025 -->
                 <tr>
-                    <td rowspan="6">Wednesday</td>
-                    <td>9:00 AM - 12:00 PM</td>
-                    <td>Quest 1 - Electrostatics Skill Acquisition</td>
-                    <td>3 hr</td>
-                    <td>Unlock Electrostatics skills</td>
+                    <td>8:00 - 8:30 AM</td>
+                    <td>Pre-Sun Prep</td>
+                    <td>30 min</td>
+                    <td>Stretch by window, sip water, review notes. Diffuse light warm-up.</td>
                 </tr>
                 <tr>
-                    <td>12:00 PM - 1:00 PM</td>
-                    <td>Lunch Break</td>
-                    <td>1 hr</td>
-                    <td>Recharge</td>
+                    <td>8:30 - 9:00 AM</td>
+                    <td>Suntime Ritual</td>
+                    <td>30 min</td>
+                    <td>Direct rays at window—coffee, music, bask. Step out if clouds block.</td>
                 </tr>
                 <tr>
-                    <td>1:00 PM - 4:00 PM</td>
-                    <td>Quest 2 - Electrostatics Battle</td>
-                    <td>3 hr</td>
-                    <td>Defeat problems (No Device)</td>
+                    <td>9:00 - 10:30 AM</td>
+                    <td>Study Block 1 (Problem-Solving)</td>
+                    <td>1 hr 30 min</td>
+                    <td>Deep study by window—diffuse light. Focus on problem sets or tough stuff.</td>
                 </tr>
                 <tr>
-                    <td>4:00 PM - 6:00 PM</td>
-                    <td>Quest 3 - Reaction Mechanism Challenge</td>
-                    <td>2 hr</td>
-                    <td>Complete DPP</td>
+                    <td>10:30 - 10:45 AM</td>
+                    <td>Breakfast + Sun Snipe</td>
+                    <td>15 min</td>
+                    <td>Quick meal (toast, fruit) + 5-10 min outside in sun.</td>
                 </tr>
                 <tr>
-                    <td>6:00 PM - 7:00 PM</td>
+                    <td>10:45 - 11:00 AM</td>
+                    <td>Transition/Buffer</td>
+                    <td>15 min</td>
+                    <td>Walk to lecture spot, grab stuff—light stretch if nearby.</td>
+                </tr>
+                <tr>
+                    <td>11:00 AM - 3:00 PM</td>
+                    <td>Lecture (Compulsory)</td>
+                    <td>4 hrs</td>
+                    <td>Class time—counts as study. Hopefully near a window or outdoors!</td>
+                </tr>
+                <tr>
+                    <td>3:00 - 3:30 PM</td>
+                    <td>Lunch + Park Sun Raid</td>
+                    <td>30 min</td>
+                    <td>Eat fast (sandwich, rice) + 10-15 min park walk for direct rays.</td>
+                </tr>
+                <tr>
+                    <td>3:30 - 5:00 PM</td>
+                    <td>Study Block 2 (Problem-Solving)</td>
+                    <td>1 hr 30 min</td>
+                    <td>By window—diffuse light. More problem sets or review lecture notes.</td>
+                </tr>
+                <tr>
+                    <td>5:00 - 5:30 PM</td>
                     <td>Dinner Break</td>
+                    <td>30 min</td>
+                    <td>Warm meal (soup, pasta) by window—open it if sun’s still up.</td>
+                </tr>
+                <tr>
+                    <td>5:30 - 6:30 PM</td>
+                    <td>Rest</td>
                     <td>1 hr</td>
-                    <td>Recharge</td>
+                    <td>Nap, scroll phone, chill by window—recharge with diffuse light/air.</td>
                 </tr>
                 <tr>
-                    <td>7:00 PM - 9:00 PM</td>
-                    <td>Quest 4 - Determinants Skill Acquisition</td>
-                    <td>2 hr</td>
-                    <td>Start Determinants Lecture</td>
-                </tr>
-                <!-- Thursday, March 19, 2025 -->
-                <tr>
-                    <td rowspan="6">Thursday</td>
-                    <td>5:00 AM - 7:00 AM</td>
-                    <td>Quest 5 - Relations and Functions Skill Acquisition Part 1</td>
-                    <td>2 hr</td>
-                    <td>Begin Lecture</td>
+                    <td>6:30 - 8:30 PM</td>
+                    <td>Study Block 3 (Self-Study)</td>
+                    <td>2 hrs</td>
+                    <td>By window—diffuse fading. Review, read, or lighter study tasks.</td>
                 </tr>
                 <tr>
-                    <td>7:00 AM - 8:00 AM</td>
-                    <td>Breakfast Break</td>
-                    <td>1 hr</td>
-                    <td>Recharge</td>
+                    <td>8:30 - 8:45 PM</td>
+                    <td>Quick Stretch Break</td>
+                    <td>15 min</td>
+                    <td>Pace by window, snack (nuts, chocolate)—shake off stiffness.</td>
                 </tr>
                 <tr>
-                    <td>8:00 AM - 11:00 AM</td>
-                    <td>Quest 6 - Heat and Thermo Battle</td>
-                    <td>3 hr</td>
-                    <td>Solve problems (No Device)</td>
+                    <td>8:45 - 10:15 PM</td>
+                    <td>Study Block 4 (Problem-Solving)</td>
+                    <td>1 hr 30 min</td>
+                    <td>Window spot, artificial light—tackle problems or wrap up lecture prep.</td>
                 </tr>
                 <tr>
-                    <td>11:00 AM - 12:00 PM</td>
-                    <td>Quest 7 - Determinants Skill Acquisition Part 3</td>
-                    <td>1 hr</td>
-                    <td>Finish Lecture</td>
+                    <td>10:15 - 10:30 PM</td>
+                    <td>Wind-Down</td>
+                    <td>15 min</td>
+                    <td>Music, deep breaths by window—GABA vibes to relax.</td>
                 </tr>
                 <tr>
-                    <td>12:00 PM - 1:00 PM</td>
-                    <td>Lunch Break</td>
-                    <td>1 hr</td>
-                    <td>Recharge</td>
-                </tr>
-                <tr>
-                    <td>1:00 PM - 3:00 PM</td>
-                    <td>Quest 8 - Determinants Battle Part 1</td>
-                    <td>2 hr</td>
-                    <td>Start Problem Solving (No Device)</td>
-                </tr>
-                <tr>
-                    <td rowspan="2">Thursday</td>
-                    <td>3:00 PM - 9:00 PM</td>
-                    <td>Special Mission - Tuition Training</td>
-                    <td>6 hr</td>
-                    <td>Bonus XP</td>
-                </tr>
-                <tr>
-                    <td>9:00 PM - 10:00 PM</td>
-                    <td>Dinner Break</td>
-                    <td>1 hr</td>
-                    <td>Recharge</td>
-                </tr>
-                <!-- Friday, March 20, 2025 -->
-                <tr>
-                    <td rowspan="7">Friday</td>
-                    <td>5:00 AM - 7:00 AM</td>
-                    <td>Quest 9 - Relations and Functions Skill Acquisition Part 2</td>
-                    <td>2 hr</td>
-                    <td>Continue Lecture</td>
-                </tr>
-                <tr>
-                    <td>7:00 AM - 8:00 AM</td>
-                    <td>Breakfast Break</td>
-                    <td>1 hr</td>
-                    <td>Recharge</td>
-                </tr>
-                <tr>
-                    <td>8:00 AM - 10:00 AM</td>
-                    <td>Quest 9 - Relations and Functions Skill Acquisition Part 3</td>
-                    <td>2 hr</td>
-                    <td>Finish Lecture</td>
-                </tr>
-                <tr>
-                    <td>10:00 AM - 1:00 PM</td>
-                    <td>Quest 10 - Determinants Battle Part 2</td>
-                    <td>3 hr</td>
-                    <td>Continue Problem Solving (No Device)</td>
-                </tr>
-                <tr>
-                    <td>1:00 PM - 2:00 PM</td>
-                    <td>Lunch Break</td>
-                    <td>1 hr</td>
-                    <td>Recharge</td>
-                </tr>
-                <tr>
-                    <td>2:00 PM - 3:00 PM</td>
-                    <td>Quest 10 - Determinants Battle Part 3</td>
-                    <td>1 hr</td>
-                    <td>Finish Problem Solving (No Device)</td>
-                </tr>
-                <tr>
-                    <td>3:00 PM - 6:00 PM</td>
-                    <td>Quest 11 - Solutions Battle</td>
-                    <td>3 hr</td>
-                    <td>Complete Problem Solving</td>
-                </tr>
-                <!-- Saturday & Sunday, March 21-22, 2025 -->
-                <tr>
-                    <td>Saturday & Sunday</td>
-                    <td>All Day</td>
-                    <td>Victory Reward</td>
-                    <td>Full Day</td>
-                    <td>Free time!</td>
+                    <td>10:30 PM - 1:00 AM</td>
+                    <td>Flex Time (Optional Study/Rest)</td>
+                    <td>2 hrs 30 min</td>
+                    <td>Extra problem-solving (up to 12 hrs total study) or sleep prep.</td>
                 </tr>
             </tbody>
         </table>
-        <button id="edit-schedule-btn">Edit Schedule</button>
-        <button id="analyze-btn">Analyze Weakest Subject</button>
-    </div>
-
-    <!-- Shop Popup -->
-    <div class="schedule-popup" id="shop-popup">
-        <button class="schedule-close" id="shop-close">X</button>
-        <h2>Virtual Shop</h2>
-        <ul id="shop-items">
-            <li>Tree (500 coins) - <button class="buy-btn" data-item="tree" data-cost="500">Buy</button></li>
-            <li>Bird (300 coins, 2x multiplier for 24 hr) - <button class="buy-btn" data-item="bird" data-cost="300">Buy</button></li>
-        </ul>
-        <button id="prestige-btn" style="display: none;">Prestige (Reset for 10% Bonus)</button>
-    </div>
-
-    <!-- Achievements Popup -->
-    <div class="schedule-popup" id="achievements-popup">
-        <button class="schedule-close" id="achievements-close">X</button>
-        <h2>Achievements</h2>
-        <ul id="achievements-list"></ul>
-    </div>
-
-    <!-- Knowledge Tree Popup -->
-    <div class="schedule-popup" id="knowledge-tree-popup">
-        <button class="schedule-close" id="knowledge-tree-close">X</button>
-        <canvas id="knowledge-tree-canvas" width="600" height="400"></canvas>
     </div>
 
     <div class="graph-sidebar" id="graph-sidebar">
@@ -1145,23 +1046,15 @@
                 coins: 0,
                 level: 1,
                 tasksCompleted: 0,
-                tasks: new Map(),
-                streak: 0,
-                lastCompletionDay: null,
-                prestige: 0,
-                multipliers: { base: 1, temp: { value: 1, expiry: null } },
-                dailyQuests: [],
-                achievements: []
+                tasks: new Map()
             };
 
             let subjectProgress = new Map();
             let currentUser = null;
-            let schedule = [];
 
             const coinsElement = document.getElementById('coins');
             const levelElement = document.getElementById('level');
             const tasksCompletedElement = document.getElementById('tasks-completed');
-            const streakElement = document.getElementById('streak');
             const progressBarElement = document.getElementById('level-progress-bar');
             const taskListElement = document.getElementById('task-list');
             const emptyTasksElement = document.getElementById('empty-tasks');
@@ -1169,7 +1062,6 @@
             const taskNameInput = document.getElementById('task-name');
             const deadlineDateInput = document.getElementById('deadline-date');
             const deadlineTimeInput = document.getElementById('deadline-time');
-            const difficultySelect = document.getElementById('difficulty');
             const levelUpPopup = document.getElementById('level-up-popup');
             const newLevelElement = document.getElementById('new-level');
             const levelUpOkButton = document.getElementById('level-up-ok');
@@ -1192,21 +1084,6 @@
             const cancelMarksBtn = document.getElementById('cancel-marks-btn');
             const schedulePopup = document.getElementById('schedule-popup');
             const scheduleClose = document.getElementById('schedule-close');
-            const editScheduleBtn = document.getElementById('edit-schedule-btn');
-            const analyzeBtn = document.getElementById('analyze-btn');
-            const shopBtn = document.getElementById('shop-btn');
-            const shopPopup = document.getElementById('shop-popup');
-            const shopClose = document.getElementById('shop-close');
-            const prestigeBtn = document.getElementById('prestige-btn');
-            const dailyQuestsElement = document.getElementById('daily-quests');
-            const achievementsBtn = document.getElementById('achievements-btn');
-            const achievementsPopup = document.getElementById('achievements-popup');
-            const achievementsClose = document.getElementById('achievements-close');
-            const achievementsList = document.getElementById('achievements-list');
-            const knowledgeTreeBtn = document.getElementById('knowledge-tree-btn');
-            const knowledgeTreePopup = document.getElementById('knowledge-tree-popup');
-            const knowledgeTreeClose = document.getElementById('knowledge-tree-close');
-            const knowledgeTreeCanvas = document.getElementById('knowledge-tree-canvas');
 
             const backgroundImages = {
                 0: 'https://assets.grok.com/users/61aa03d5-34a6-451f-a29b-c678af050623/7qqe1265AFQU0oyA-generated_image.jpg',
@@ -1243,18 +1120,38 @@
                         y: {
                             beginAtZero: true,
                             max: 300,
-                            title: { display: true, text: 'Marks', color: '#FFFFFF' },
-                            ticks: { color: '#FFFFFF' },
-                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                            title: {
+                                display: true,
+                                text: 'Marks',
+                                color: '#FFFFFF'
+                            },
+                            ticks: {
+                                color: '#FFFFFF'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
                         },
                         x: {
-                            title: { display: true, text: 'Test', color: '#FFFFFF' },
-                            ticks: { color: '#FFFFFF' },
-                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                            title: {
+                                display: true,
+                                text: 'Test',
+                                color: '#FFFFFF'
+                            },
+                            ticks: {
+                                color: '#FFFFFF'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
                         }
                     },
                     plugins: {
-                        legend: { labels: { color: '#FFFFFF' } },
+                        legend: {
+                            labels: {
+                                color: '#FFFFFF'
+                            }
+                        },
                         tooltip: {
                             callbacks: {
                                 label: function(context) {
@@ -1330,7 +1227,9 @@
                 const users = loadUsers();
                 if (users[username] && users[username].password === password) {
                     currentUser = username;
-                    if (staySignedIn) saveSignedInUser(username);
+                    if (staySignedIn) {
+                        saveSignedInUser(username);
+                    }
                     signinOverlay.style.display = 'none';
                     mainContent.classList.remove('blur');
                     signoutBtn.style.display = 'block';
@@ -1341,7 +1240,9 @@
                     users[username] = { password: password };
                     saveUsers(users);
                     currentUser = username;
-                    if (staySignedIn) saveSignedInUser(username);
+                    if (staySignedIn) {
+                        saveSignedInUser(username);
+                    }
                     signinOverlay.style.display = 'none';
                     mainContent.classList.remove('blur');
                     signoutBtn.style.display = 'block';
@@ -1363,14 +1264,18 @@
                 passwordInput.value = '';
                 staySignedInCheckbox.checked = false;
                 signinError.style.display = 'none';
-                if (intervalId) clearInterval(intervalId);
+                if (intervalId) {
+                    clearInterval(intervalId);
+                }
             }
 
             signinBtn.addEventListener('click', () => {
                 const username = usernameInput.value.trim();
                 const password = passwordInput.value.trim();
                 const staySignedIn = staySignedInCheckbox.checked;
-                if (username && password) signIn(username, password, staySignedIn);
+                if (username && password) {
+                    signIn(username, password, staySignedIn);
+                }
             });
 
             signoutBtn.addEventListener('click', signOut);
@@ -1378,7 +1283,9 @@
             function loadSubjectProgress() {
                 if (!currentUser) return;
                 const savedProgress = localStorage.getItem(`subjectProgress_${currentUser}`);
-                if (savedProgress) subjectProgress = new Map(JSON.parse(savedProgress));
+                if (savedProgress) {
+                    subjectProgress = new Map(JSON.parse(savedProgress));
+                }
                 updateSubjectProgressBars();
             }
 
@@ -1409,7 +1316,6 @@
                 subjectProgress.set(subject, questionsDone);
                 saveSubjectProgress();
                 updateSubjectProgressBars();
-                checkAchievements(subject, questionsDone);
             }
 
             function loadMarksData() {
@@ -1425,7 +1331,11 @@
 
             function saveMarksData() {
                 if (!currentUser) return;
-                localStorage.setItem(`marksData_${currentUser}`, JSON.stringify({ labels: marksData.labels, data: marksData.datasets[0].data }));
+                const dataToSave = {
+                    labels: marksData.labels,
+                    data: marksData.datasets[0].data
+                };
+                localStorage.setItem(`marksData_${currentUser}`, JSON.stringify(dataToSave));
             }
 
             function loadGameState() {
@@ -1433,27 +1343,390 @@
                 const savedState = localStorage.getItem(`forestQuestState_${currentUser}`);
                 if (savedState) {
                     const parsedState = JSON.parse(savedState);
-                    gameState = { ...gameState, ...parsedState, tasks: new Map(parsedState.tasks.map(t => [t.id, t])) };
+                    gameState.coins = parsedState.coins || 0;
+                    gameState.level = parsedState.level || 1;
+                    gameState.tasksCompleted = parsedState.tasksCompleted || 0;
+                    gameState.tasks = new Map();
+                    (parsedState.tasks || []).forEach(task => {
+                        if (task.id && !gameState.tasks.has(task.id)) {
+                            gameState.tasks.set(task.id, task);
+                        }
+                    });
                 }
                 updateUI();
                 updateBackground();
                 renderTasks();
-                renderDailyQuests();
                 loadMarksData();
-                loadSchedule();
-                checkStreak();
-                if (intervalId) clearInterval(intervalId);
-                intervalId = setInterval(() => { checkDeadlines(); checkDailyQuests(); }, 60000);
+
+                if (intervalId) {
+                    clearInterval(intervalId);
+                }
+                intervalId = setInterval(checkDeadlines, 60000);
             }
 
             function saveGameState() {
                 if (!currentUser) return;
-                localStorage.setItem(`forestQuestState_${currentUser}`, JSON.stringify({ ...gameState, tasks: Array.from(gameState.tasks.values()) }));
+                const stateToSave = {
+                    coins: gameState.coins,
+                    level: gameState.level,
+                    tasksCompleted: gameState.tasksCompleted,
+                    tasks: Array.from(gameState.tasks.values())
+                };
+                localStorage.setItem(`forestQuestState_${currentUser}`, JSON.stringify(stateToSave));
             }
 
             function updateUI() {
                 coinsElement.textContent = gameState.coins;
                 levelElement.textContent = gameState.level;
                 tasksCompletedElement.textContent = gameState.tasksCompleted;
-                streakElement.textContent = gameState.streak;
-                const progress = (gameState.co
+                const progress = (gameState.coins % 1000) / 10;
+                progressBarElement.style.width = `${progress}%`;
+            }
+
+            function updateBackground() {
+                if (document.body.classList.contains('starry-night')) {
+                    document.body.style.background = "url('https://static.vecteezy.com/system/resources/thumbnails/023/887/107/small/seamless-loop-galaxy-exploration-through-outer-space-towards-glowing-milky-way-galaxy-4k-looping-animation-of-flying-through-glowing-nebulae-clouds-and-stars-field-elements-free-video.jpg') no-repeat center center fixed";
+                    document.body.style.backgroundSize = 'cover';
+                } else {
+                    document.body.style.backgroundImage = `url('${backgroundImages[gameState.level > 5 ? 5 : gameState.level]}')`;
+                }
+            }
+
+            function generateTaskId() {
+                return Date.now().toString(36) + Math.random().toString(36).substr(2);
+            }
+
+            function formatDateTime(date) {
+                return new Date(date).toLocaleString(undefined, {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            }
+
+            function isUrgent(deadline) {
+                const now = new Date();
+                const deadlineDate = new Date(deadline);
+                return (deadlineDate - now) < 3600000 && (deadlineDate - now) > 0;
+            }
+
+            function isPastDeadline(deadline) {
+                const now = new Date();
+                const deadlineDate = new Date(deadline);
+                return now > deadlineDate;
+            }
+
+            function calculateTaskProgress(deadline, created) {
+                const now = new Date().getTime();
+                const deadlineDate = new Date(deadline).getTime();
+                const createdDate = new Date(created).getTime();
+                
+                const totalDuration = deadlineDate - createdDate;
+                const elapsed = now - createdDate;
+                const progress = (totalDuration - (deadlineDate - now)) / totalDuration * 100;
+                
+                if (deadlineDate < now) return 100;
+                if (totalDuration <= 0) return 0;
+                
+                return Math.max(0, Math.min(100, progress));
+            }
+
+            function renderTasks() {
+                if (gameState.tasks.size === 0) {
+                    emptyTasksElement.style.display = 'block';
+                } else {
+                    emptyTasksElement.style.display = 'none';
+                }
+
+                while (taskListElement.firstChild) {
+                    if (taskListElement.firstChild !== emptyTasksElement) {
+                        taskListElement.removeChild(taskListElement.firstChild);
+                    } else {
+                        break;
+                    }
+                }
+
+                const sortedTasks = Array.from(gameState.tasks.values()).sort((a, b) => {
+                    return new Date(a.deadline) - new Date(b.deadline);
+                });
+
+                sortedTasks.forEach(task => {
+                    if (!taskListElement.querySelector(`[data-id="${task.id}"]`)) {
+                        const taskItem = document.createElement('li');
+                        taskItem.className = 'task-item';
+                        taskItem.dataset.id = task.id;
+                        if (isPastDeadline(task.deadline)) {
+                            taskItem.classList.add('overdue');
+                        }
+
+                        const deadlineClass = isUrgent(task.deadline) ? 'urgent' : '';
+                        const isPast = isPastDeadline(task.deadline);
+                        const progress = calculateTaskProgress(task.deadline, task.created);
+
+                        taskItem.innerHTML = `
+                            <div class="task-details">
+                                <div class="task-name">${task.name}</div>
+                                <div class="task-deadline ${deadlineClass}">
+                                    ${isPast ? '⚠️ OVERDUE: ' : ''}Due: ${formatDateTime(task.deadline)}
+                                </div>
+                                <div class="task-progress">
+                                    <div class="task-progress-bar" style="width: ${progress}%"></div>
+                                </div>
+                            </div>
+                            <div class="task-actions">
+                                <button class="complete-btn">✓ Complete</button>
+                                <button class="delete-btn">Delete</button>
+                            </div>
+                        `;
+
+                        taskListElement.appendChild(taskItem);
+
+                        const completeBtn = taskItem.querySelector('.complete-btn');
+                        const deleteBtn = taskItem.querySelector('.delete-btn');
+
+                        completeBtn.addEventListener('click', () => completeTask(task.id));
+                        deleteBtn.addEventListener('click', () => deleteTask(task.id));
+                    }
+                });
+            }
+
+            function addTask(name, deadline) {
+                const id = generateTaskId();
+                if (gameState.tasks.has(id)) return;
+
+                const taskExists = Array.from(gameState.tasks.values()).some(task => 
+                    task.name === name && task.deadline === deadline
+                );
+                if (taskExists) return;
+
+                const newTask = {
+                    id: id,
+                    name: name,
+                    deadline: deadline,
+                    created: new Date().toISOString()
+                };
+
+                gameState.tasks.set(id, newTask);
+                saveGameState();
+                renderTasks();
+            }
+
+            function completeTask(taskId) {
+                if (!gameState.tasks.has(taskId)) return;
+
+                gameState.tasks.delete(taskId);
+                addCoins(100);
+                gameState.tasksCompleted++;
+
+                saveGameState();
+                renderTasks();
+                updateUI();
+            }
+
+            function deleteTask(taskId) {
+                if (!gameState.tasks.has(taskId)) return;
+
+                gameState.tasks.delete(taskId);
+                saveGameState();
+                renderTasks();
+            }
+
+            function addCoins(amount) {
+                gameState.coins += amount;
+                coinsElement.classList.add('coin-animation');
+                
+                const previousLevel = gameState.level;
+                gameState.level = Math.floor(gameState.coins / 1000) + 1;
+                
+                if (gameState.level > previousLevel) {
+                    showLevelUp(gameState.level);
+                }
+                
+                setTimeout(() => {
+                    coinsElement.classList.remove('coin-animation');
+                }, 500);
+                saveGameState();
+                updateUI();
+            }
+
+            function removeCoins(amount) {
+                gameState.coins = Math.max(0, gameState.coins - amount);
+                saveGameState();
+                updateUI();
+            }
+
+            function showLevelUp(newLevel) {
+                newLevelElement.textContent = newLevel;
+                levelUpPopup.style.display = 'block';
+                updateBackground();
+            }
+
+            function checkDeadlines() {
+                let penalty = false;
+                
+                for (let [id, task] of gameState.tasks) {
+                    if (isPastDeadline(task.deadline)) {
+                        penalty = true;
+                    }
+                }
+                
+                if (penalty) {
+                    removeCoins(50);
+                    updateUI();
+                }
+                
+                renderTasks();
+            }
+
+            function showDeleteButton(index) {
+                const existingButton = document.querySelector('.delete-graph-point');
+                if (existingButton) existingButton.remove();
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.textContent = 'Delete Point';
+                deleteBtn.className = 'delete-graph-point';
+                deleteBtn.style.position = 'absolute';
+                deleteBtn.style.backgroundColor = 'var(--delete-color)';
+                deleteBtn.style.padding = '0.5rem 1rem';
+                deleteBtn.style.border = 'none';
+                deleteBtn.style.borderRadius = '5px';
+                deleteBtn.style.cursor = 'pointer';
+                deleteBtn.style.zIndex = '104';
+
+                const canvas = document.getElementById('marksGraph');
+                const rect = canvas.getBoundingClientRect();
+                const x = marksChart.getDatasetMeta(0).data[index].x + rect.left;
+                const y = marksChart.getDatasetMeta(0).data[index].y + rect.top;
+                deleteBtn.style.left = `${x}px`;
+                deleteBtn.style.top = `${y - 40}px`;
+
+                deleteBtn.addEventListener('click', () => {
+                    marksData.labels.splice(index, 1);
+                    marksData.datasets[0].data.splice(index, 1);
+                    marksChart.update();
+                    saveMarksData();
+                    deleteBtn.remove();
+                });
+
+                document.body.appendChild(deleteBtn);
+
+                document.addEventListener('click', function handler(e) {
+                    if (!deleteBtn.contains(e.target) && e.target !== canvas) {
+                        deleteBtn.remove();
+                        document.removeEventListener('click', handler);
+                    }
+                }, { once: true });
+            }
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key.toLowerCase() === 'o') {
+                    toggleStarryNight();
+                }
+                if (e.key.toLowerCase() === 't') {
+                    graphSidebar.classList.toggle('open');
+                    const existingButton = document.querySelector('.delete-graph-point');
+                    if (existingButton) existingButton.remove();
+                }
+                if (e.key.toLowerCase() === 'p') {
+                    schedulePopup.style.display = schedulePopup.style.display === 'block' ? 'none' : 'block';
+                }
+            });
+
+            addMarksBtn.addEventListener('click', () => {
+                marksInputPopup.style.display = 'block';
+                marksInput.value = '';
+                document.getElementById('marks-name').value = '';
+            });
+
+            submitMarksBtn.addEventListener('click', () => {
+                const marks = parseInt(marksInput.value);
+                const testName = document.getElementById('marks-name').value.trim() || new Date().toLocaleDateString();
+                if (marks >= 0 && marks <= 300) {
+                    marksData.labels.push(testName);
+                    marksData.datasets[0].data.push(marks);
+                    marksChart.update();
+                    saveMarksData();
+                    marksInputPopup.style.display = 'none';
+                    document.getElementById('marks-name').value = '';
+                    marksInput.value = '';
+                } else {
+                    alert('Please enter marks between 0 and 300');
+                }
+            });
+
+            cancelMarksBtn.addEventListener('click', () => {
+                marksInputPopup.style.display = 'none';
+                document.getElementById('marks-name').value = '';
+                marksInput.value = '';
+            });
+
+            targetsBtn.addEventListener('click', () => {
+                targetsPopup.style.display = 'block';
+            });
+
+            targetsClose.addEventListener('click', () => {
+                targetsPopup.style.display = 'none';
+            });
+
+            scheduleClose.addEventListener('click', () => {
+                schedulePopup.style.display = 'none';
+            });
+
+            document.querySelectorAll('.progress-input').forEach(input => {
+                input.addEventListener('input', handleProgressInput);
+                input.addEventListener('blur', handleProgressInput);
+            });
+
+            addTaskForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const name = taskNameInput.value.trim();
+                const deadlineDate = deadlineDateInput.value;
+                const deadlineTime = deadlineTimeInput.value;
+                
+                if (!name || !deadlineDate || !deadlineTime) return;
+                
+                const deadline = new Date(`${deadlineDate}T${deadlineTime}`).toISOString();
+                
+                addTask(name, deadline);
+                
+                taskNameInput.value = '';
+                
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                deadlineDateInput.value = tomorrow.toISOString().split('T')[0];
+            });
+
+            levelUpOkButton.addEventListener('click', function() {
+                levelUpPopup.style.display = 'none';
+            });
+
+            const today = new Date();
+            deadlineDateInput.value = today.toISOString().split('T')[0];
+            deadlineTimeInput.value = '23:59';
+
+            const signedInUser = loadSignedInUser();
+            if (signedInUser) {
+                currentUser = signedInUser;
+                signinOverlay.style.display = 'none';
+                mainContent.classList.remove('blur');
+                signoutBtn.style.display = 'block';
+                loadGameState();
+                loadSubjectProgress();
+                loadMarksData();
+            } else {
+                mainContent.classList.add('blur');
+                signinOverlay.style.display = 'flex';
+            }
+
+            window.addEventListener('beforeunload', () => {
+                if (intervalId) {
+                    clearInterval(intervalId);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
