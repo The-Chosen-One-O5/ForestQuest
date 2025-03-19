@@ -1,3 +1,740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forest Quest - Gamified Productivity</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-color: #4CAF50;
+            --secondary-color: #388E3C;
+            --accent-color: #FFD700;
+            --light-text: #FFFFFF;
+            --delete-color: #F44336;
+            --task-bg: rgba(40, 40, 40, 0.85);
+            --transition-time: 0.3s;
+            --dark-bg: #1A1A1A;
+            --dark-container: rgba(40, 40, 40, 0.9);
+            --dark-input-bg: #2C2C2C;
+            --overlay: rgba(0, 0, 0, 0.4);
+            --graph-bg: #2A2A2A;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-size: contain;
+            background-position: center;
+            background-attachment: fixed;
+            min-height: 100vh;
+            transition: background-image 1s ease-in-out;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: var(--dark-bg);
+            color: var(--light-text);
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--overlay);
+            z-index: -1;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 1.5rem;
+            background-color: var(--dark-container);
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            color: var(--light-text);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--primary-color);
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .coin-icon {
+            width: 24px;
+            height: 24px;
+            vertical-align: middle;
+            margin-right: 5px;
+        }
+
+        .leaf-icon {
+            width: 30px;
+            height: 30px;
+            vertical-align: middle;
+            margin-left: 10px;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background-color: var(--secondary-color);
+            border-radius: 10px;
+            color: var(--light-text);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat {
+            text-align: center;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-top: 0.5rem;
+        }
+
+        .level-progress {
+            height: 12px;
+            background-color: #444;
+            border-radius: 6px;
+            margin: 0.5rem 0 1.5rem;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background-color: var(--accent-color);
+            border-radius: 6px;
+            transition: width 0.5s ease-in-out;
+        }
+
+        .task-progress {
+            height: 8px;
+            background-color: #444;
+            border-radius: 4px;
+            margin-top: 0.5rem;
+            overflow: hidden;
+        }
+
+        .task-progress-bar {
+            height: 100%;
+            background-color: var(--primary-color);
+            border-radius: 4px;
+            transition: width 0.5s ease-in-out;
+        }
+
+        .targets-btn {
+            margin: 1rem 0;
+            padding: 0.75rem 1.5rem;
+            background-color: var(--accent-color);
+            color: #000;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: background-color var(--transition-time) ease, transform var(--transition-time) ease;
+        }
+
+        .targets-btn:hover {
+            background-color: #e6c200;
+            transform: translateY(-2px);
+        }
+
+        .targets-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(40, 40, 40, 0.95);
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            max-height: 80vh;
+            overflow-y: auto;
+            width: 90%;
+            max-width: 700px;
+            z-index: 101;
+            display: none;
+        }
+
+        .targets-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            color: var(--light-text);
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+
+        .targets-table {
+            width: 100%;
+            border-collapse: collapse;
+            color: var(--light-text);
+        }
+
+        .targets-table tr.class-row {
+            background-color: #2F2F2F;
+            font-weight: bold;
+        }
+
+        .targets-table tr.subject-row {
+            background-color: #3A3A3A;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        body.starry-night .targets-table tr.subject-row {
+            color: #4682B4;
+        }
+
+        .targets-table tr.topic-row {
+            background-color: var(--task-bg);
+        }
+
+        .targets-table td {
+            padding: 0.5rem;
+            border-bottom: 1px solid #444;
+        }
+
+        .subject-progress {
+            height: 10px;
+            background-color: #555;
+            border-radius: 5px;
+            overflow: hidden;
+            width: 150px;
+        }
+
+        .subject-progress-bar {
+            height: 100%;
+            background-color: var(--primary-color);
+            border-radius: 5px;
+            transition: width 0.5s ease-in-out;
+        }
+
+        .progress-input {
+            width: 60px;
+            padding: 0.25rem;
+            border: 1px solid #444;
+            border-radius: 5px;
+            background-color: var(--dark-input-bg);
+            color: var(--light-text);
+            text-align: center;
+        }
+
+        .task-item.overdue .task-progress-bar {
+            background-color: var(--delete-color);
+        }
+
+        .add-task {
+            margin-bottom: 2rem;
+        }
+
+        .add-task-form {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+            grid-column: 1 / -1;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--light-text);
+            font-weight: 500;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #444;
+            border-radius: 5px;
+            font-size: 1rem;
+            background-color: var(--dark-input-bg);
+            color: var(--light-text);
+        }
+
+        .deadline-inputs {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .deadline-inputs select, .deadline-inputs input {
+            flex: 1;
+        }
+
+        button {
+            padding: 0.75rem 1.5rem;
+            background-color: var(--primary-color);
+            color: var(--light-text);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: background-color var(--transition-time) ease, transform var(--transition-time) ease;
+        }
+
+        button:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+
+        .task-list {
+            list-style: none;
+            margin-top: 1rem;
+        }
+
+        .task-item {
+            background-color: var(--task-bg);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            animation: slideIn 0.3s ease-out;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            color: var(--light-text);
+        }
+
+        .task-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .task-details {
+            flex: 1;
+        }
+
+        .task-name {
+            font-weight: 500;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .task-deadline {
+            color: #B0B0B0;
+            font-size: 0.9rem;
+        }
+
+        .urgent {
+            color: var(--delete-color);
+            font-weight: bold;
+        }
+
+        .task-actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .complete-btn {
+            background-color: var(--primary-color);
+        }
+
+        .delete-btn {
+            background-color: var(--delete-color);
+        }
+
+        .level-up {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            color: var(--light-text);
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+            z-index: 100;
+            animation: levelUpAnim 1.5s ease-out;
+            display: none;
+        }
+
+        .level-up h2 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: var(--accent-color);
+        }
+
+        .level-up p {
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: #B0B0B0;
+        }
+
+        .blur {
+            filter: blur(5px);
+            pointer-events: none;
+        }
+
+        .signin-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+        }
+
+        .signin-box {
+            background-color: var(--dark-container);
+            padding: 2rem;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .signin-box h2 {
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+        }
+
+        .signin-box input[type="text"], .signin-box input[type="password"] {
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            width: 100%;
+            border: 1px solid #444;
+            border-radius: 5px;
+            background-color: var(--dark-input-bg);
+            color: var(--light-text);
+        }
+
+        .signin-box input[type="checkbox"] {
+            margin-right: 0.5rem;
+            vertical-align: middle;
+        }
+
+        .signin-box label {
+            display: inline-block;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .signin-box button {
+            width: 100%;
+            margin-top: 1rem;
+        }
+
+        .signin-error {
+            color: var(--delete-color);
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .signout-btn {
+            background-color: var(--delete-color);
+            margin-top: 1rem;
+        }
+
+        .graph-sidebar {
+            position: fixed;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background-color: var(--graph-bg);
+            z-index: 102;
+            transition: left var(--transition-time) ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        .graph-sidebar.open {
+            left: 0;
+        }
+
+        .graph-title {
+            color: var(--light-text);
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .graph-container {
+            width: 90%;
+            max-width: 1000px;
+            height: 80%;
+            background-color: #333;
+            border-radius: 10px;
+            padding: 1rem;
+        }
+
+        .add-marks-btn {
+            margin-top: 1rem;
+            padding: 0.75rem 1.5rem;
+            background-color: var(--primary-color);
+            color: var(--light-text);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color var(--transition-time) ease;
+        }
+
+        .add-marks-btn:hover {
+            background-color: var(--secondary-color);
+        }
+
+        .marks-input-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: var(--dark-container);
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            z-index: 103;
+            display: none;
+        }
+
+        .marks-input-popup input {
+            padding: 0.5rem;
+            margin: 0.5rem 0;
+            width: 100%;
+            background-color: var(--dark-input-bg);
+            color: var(--light-text);
+            border: 1px solid #444;
+            border-radius: 5px;
+        }
+
+        .marks-input-popup button {
+            margin-top: 0.5rem;
+            width: 100%;
+        }
+
+        .schedule-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(40, 40, 40, 0.95);
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            max-height: 80vh;
+            overflow-y: auto;
+            width: 90%;
+            max-width: 800px;
+            z-index: 101;
+            display: none;
+        }
+
+        .schedule-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            color: var(--primary-color);
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+
+        .schedule-table {
+            width: 100%;
+            border-collapse: collapse;
+            color: var(--primary-color);
+        }
+
+        .schedule-table th {
+            background-color: #1A1A1A;
+            padding: 0.75rem;
+            text-align: left;
+            font-weight: bold;
+            border-bottom: 2px solid var(--primary-color);
+        }
+
+        .schedule-table td {
+            background-color: #1A1A1A;
+            padding: 0.75rem;
+            border-bottom: 1px solid #444;
+        }
+
+        #particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+            opacity: 0.6;
+            animation: float 6s infinite ease-in-out;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(100vh); opacity: 0; }
+            20% { opacity: 0.6; }
+            80% { opacity: 0.6; }
+            100% { transform: translateY(-10vh); opacity: 0; }
+        }
+
+        #stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+            display: none;
+        }
+
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background-color: #FFFFFF;
+            border-radius: 50%;
+            opacity: 0;
+        }
+
+        @keyframes twinkle {
+            0% { opacity: 0; }
+            50% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        body.starry-night {
+            --primary-color: #4682B4;
+            --secondary-color: #2F5A78;
+            --accent-color: #FFDAB9;
+            --dark-bg: #0D1B2A;
+            background: url('https://static.vecteezy.com/system/resources/thumbnails/023/887/107/small/seamless-loop-galaxy-exploration-through-outer-space-towards-glowing-milky-way-galaxy-4k-looping-animation-of-flying-through-glowing-nebulae-clouds-and-stars-field-elements-free-video.jpg') no-repeat center center fixed;
+            background-size: cover;
+        }
+
+        body.starry-night #stars {
+            display: block;
+        }
+
+        body.starry-night .star {
+            animation: twinkle 3s infinite ease-in-out;
+            opacity: 1;
+        }
+
+        body.starry-night #particles {
+            display: none;
+        }
+
+        body.starry-night .targets-btn:hover {
+            background-color: #e6b999;
+        }
+
+        body.starry-night button:hover {
+            background-color: var(--secondary-color);
+        }
+
+        @keyframes levelUpAnim {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+            50% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+            100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes coinAdd {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.5); color: var(--accent-color); }
+            100% { transform: scale(1); }
+        }
+
+        .coin-animation {
+            animation: coinAdd 0.5s ease-out;
+        }
+
+        @media (max-width: 600px) {
+            .add-task-form {
+                grid-template-columns: 1fr;
+            }
+            
+            .deadline-inputs {
+                flex-direction: column;
+            }
+            
+            .task-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .task-actions {
+                width: 100%;
+                margin-top: 1rem;
+                justify-content: flex-end;
+            }
+
+            .targets-table td {
+                padding: 0.3rem;
+            }
+
+            .subject-progress {
+                width: 100px;
+            }
+
+            .progress-input {
+                width: 50px;
+            }
+        }
+    </style>
+</head>
 <body>
     <div id="particles"></div>
     <div id="stars"></div>
@@ -92,25 +829,106 @@
         <button class="targets-close" id="targets-close">X</button>
         <table class="targets-table">
             <tbody>
-                <!-- Existing Class 11 and Class 12 topics unchanged -->
-                <!-- Add your specific topics here if needed -->
+                <!-- Class 11 -->
+                <tr class="class-row"><td colspan="3">Class 11</td></tr>
+                <!-- Physics -->
+                <tr class="subject-row"><td colspan="3">Physics</td></tr>
+                <tr class="topic-row"><td>Physical World and Measurement</td><td><div class="subject-progress" data-subject="Physical World and Measurement"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Kinematics</td><td><div class="subject-progress" data-subject="Kinematics"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Laws of Motion</td><td><div class="subject-progress" data-subject="Laws of Motion"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Work, Energy and Power</td><td><div class="subject-progress" data-subject="Work, Energy and Power"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Motion of System of Particles and Rigid Body</td><td><div class="subject-progress" data-subject="Motion of System of Particles and Rigid Body"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Gravitation</td><td><div class="subject-progress" data-subject="Gravitation"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Properties of Bulk Matter</td><td><div class="subject-progress" data-subject="Properties of Bulk Matter"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Thermodynamics</td><td><div class="subject-progress" data-subject="Thermodynamics (Physics Class 11)"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Behavior of Perfect Gas and Kinetic Theory</td><td><div class="subject-progress" data-subject="Behavior of Perfect Gas and Kinetic Theory"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Oscillations and Waves</td><td><div class="subject-progress" data-subject="Oscillations and Waves"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <!-- Chemistry -->
+                <tr class="subject-row"><td colspan="3">Chemistry</td></tr>
+                <tr class="topic-row"><td>Some Basic Concepts of Chemistry</td><td><div class="subject-progress" data-subject="Some Basic Concepts of Chemistry"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Structure of Atom</td><td><div class="subject-progress" data-subject="Structure of Atom"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Classification of Elements and Periodicity in Properties</td><td><div class="subject-progress" data-subject="Classification of Elements and Periodicity in Properties"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Chemical Bonding and Molecular Structure</td><td><div class="subject-progress" data-subject="Chemical Bonding and Molecular Structure"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>States of Matter: Gases and Liquids</td><td><div class="subject-progress" data-subject="States of Matter: Gases and Liquids"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Thermodynamics</td><td><div class="subject-progress" data-subject="Thermodynamics (Chemistry Class 11)"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Equilibrium</td><td><div class="subject-progress" data-subject="Equilibrium"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Redox Reactions</td><td><div class="subject-progress" data-subject="Redox Reactions"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Hydrogen</td><td><div class="subject-progress" data-subject="Hydrogen"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>s-Block Element (Alkali and Alkaline earth metals)</td><td><div class="subject-progress" data-subject="s-Block Element (Alkali and Alkaline earth metals)"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Some p-Block Elements</td><td><div class="subject-progress" data-subject="Some p-Block Elements"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Organic Chemistry - Some Basic Principles and Techniques</td><td><div class="subject-progress" data-subject="Organic Chemistry - Some Basic Principles and Techniques"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Hydrocarbons</td><td><div class="subject-progress" data-subject="Hydrocarbons"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Environmental Chemistry</td><td><div class="subject-progress" data-subject="Environmental Chemistry"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <!-- Mathematics -->
+                <tr class="subject-row"><td colspan="3">Mathematics</td></tr>
+                <tr class="topic-row"><td>Sets and Functions</td><td><div class="subject-progress" data-subject="Sets and Functions"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Trigonometric Functions</td><td><div class="subject-progress" data-subject="Trigonometric Functions"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Complex Numbers and Quadratic Equations</td><td><div class="subject-progress" data-subject="Complex Numbers and Quadratic Equations"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Linear Inequalities</td><td><div class="subject-progress" data-subject="Linear Inequalities"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Permutations and Combinations</td><td><div class="subject-progress" data-subject="Permutations and Combinations (Class 11)"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Binomial Theorem</td><td><div class="subject-progress" data-subject="Binomial Theorem"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Sequences and Series</td><td><div class="subject-progress" data-subject="Sequences and Series"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Straight Lines</td><td><div class="subject-progress" data-subject="Straight Lines"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Conic Sections</td><td><div class="subject-progress" data-subject="Conic Sections"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Introduction to Three-Dimensional Geometry</td><td><div class="subject-progress" data-subject="Introduction to Three-Dimensional Geometry"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Limits and Derivatives</td><td><div class="subject-progress" data-subject="Limits and Derivatives"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Mathematical Reasoning</td><td><div class="subject-progress" data-subject="Mathematical Reasoning"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Statistics and Probability</td><td><div class="subject-progress" data-subject="Statistics and Probability (Class 11)"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Mathematical Induction</td><td><div class="subject-progress" data-subject="Mathematical Induction"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <!-- Class 12 -->
                 <tr class="class-row"><td colspan="3">Class 12</td></tr>
+                <!-- Physics -->
                 <tr class="subject-row"><td colspan="3">Physics</td></tr>
                 <tr class="topic-row"><td>Electrostatics</td><td><div class="subject-progress" data-subject="Electrostatics"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Current Electricity</td><td><div class="subject-progress" data-subject="Current Electricity"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Magnetic Effects of Current and Magnetism</td><td><div class="subject-progress" data-subject="Magnetic Effects of Current and Magnetism"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Electromagnetic Induction and Alternating Currents</td><td><div class="subject-progress" data-subject="Electromagnetic Induction and Alternating Currents"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Electromagnetic Waves</td><td><div class="subject-progress" data-subject="Electromagnetic Waves"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Optics</td><td><div class="subject-progress" data-subject="Optics"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Dual Nature of Matter and Radiation</td><td><div class="subject-progress" data-subject="Dual Nature of Matter and Radiation"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Atoms and Nuclei</td><td><div class="subject-progress" data-subject="Atoms and Nuclei"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Electronic Devices</td><td><div class="subject-progress" data-subject="Electronic Devices"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
                 <tr class="topic-row"><td>Thermodynamics</td><td><div class="subject-progress" data-subject="Thermodynamics (Physics Class 12)"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <!-- Chemistry -->
                 <tr class="subject-row"><td colspan="3">Chemistry</td></tr>
+                <tr class="topic-row"><td>Solid State</td><td><div class="subject-progress" data-subject="Solid State"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
                 <tr class="topic-row"><td>Solutions</td><td><div class="subject-progress" data-subject="Solutions"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Electrochemistry</td><td><div class="subject-progress" data-subject="Electrochemistry"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Chemical Kinetics</td><td><div class="subject-progress" data-subject="Chemical Kinetics"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Surface Chemistry</td><td><div class="subject-progress" data-subject="Surface Chemistry"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>General Principles and Processes of Isolation of Elements</td><td><div class="subject-progress" data-subject="General Principles and Processes of Isolation of Elements"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>p-Block Elements</td><td><div class="subject-progress" data-subject="p-Block Elements"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>d and f Block Elements</td><td><div class="subject-progress" data-subject="d and f Block Elements"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Coordination Compounds</td><td><div class="subject-progress" data-subject="Coordination Compounds"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Haloalkanes and Haloarenes</td><td><div class="subject-progress" data-subject="Haloalkanes and Haloarenes"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Alcohols, Phenols and Ethers</td><td><div class="subject-progress" data-subject="Alcohols, Phenols and Ethers"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Aldehydes, Ketones and Carboxylic Acids</td><td><div class="subject-progress" data-subject="Aldehydes, Ketones and Carboxylic Acids"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Organic Compounds Containing Nitrogen</td><td><div class="subject-progress" data-subject="Organic Compounds Containing Nitrogen"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Biomolecules</td><td><div class="subject-progress" data-subject="Biomolecules"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Polymers</td><td><div class="subject-progress" data-subject="Polymers"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Chemistry in Everyday Life</td><td><div class="subject-progress" data-subject="Chemistry in Everyday Life"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
                 <tr class="topic-row"><td>Reaction Mechanisms</td><td><div class="subject-progress" data-subject="Reaction Mechanisms"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <!-- Mathematics -->
                 <tr class="subject-row"><td colspan="3">Mathematics</td></tr>
                 <tr class="topic-row"><td>Relations and Functions</td><td><div class="subject-progress" data-subject="Relations and Functions"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Inverse Trigonometric Functions</td><td><div class="subject-progress" data-subject="Inverse Trigonometric Functions"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
                 <tr class="topic-row"><td>Matrices and Determinants</td><td><div class="subject-progress" data-subject="Matrices and Determinants"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Continuity and Differentiability</td><td><div class="subject-progress" data-subject="Continuity and Differentiability"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Application of Derivatives</td><td><div class="subject-progress" data-subject="Application of Derivatives"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Integrals</td><td><div class="subject-progress" data-subject="Integrals"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Applications of Integrals</td><td><div class="subject-progress" data-subject="Applications of Integrals"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Differential Equations</td><td><div class="subject-progress" data-subject="Differential Equations"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Vectors</td><td><div class="subject-progress" data-subject="Vectors"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Three-Dimensional Geometry</td><td><div class="subject-progress" data-subject="Three-Dimensional Geometry"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Linear Programming</td><td><div class="subject-progress" data-subject="Linear Programming"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
+                <tr class="topic-row"><td>Probability</td><td><div class="subject-progress" data-subject="Probability"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
             </tbody>
         </table>
     </div>
 
     <div class="schedule-popup" id="schedule-popup">
         <button class="schedule-close" id="schedule-close">X</button>
-        <h2>Your Weekly Schedule</h2>
+        <h2>Your Weekly Schedule (March 18 - 23, 2025)</h2>
         <table class="schedule-table">
             <thead>
                 <tr>
@@ -122,7 +940,7 @@
                 </tr>
             </thead>
             <tbody>
-                <!-- Wednesday -->
+                <!-- Wednesday, March 18, 2025 -->
                 <tr>
                     <td rowspan="6">Wednesday</td>
                     <td>9:00 AM - 12:00 PM</td>
@@ -160,7 +978,7 @@
                     <td>2 hr</td>
                     <td>Start Determinants Lecture</td>
                 </tr>
-                <!-- Thursday -->
+                <!-- Thursday, March 19, 2025 -->
                 <tr>
                     <td rowspan="6">Thursday</td>
                     <td>5:00 AM - 7:00 AM</td>
@@ -199,20 +1017,19 @@
                     <td>Start Problem Solving (No Device)</td>
                 </tr>
                 <tr>
-                    <td rowspan="1">Thursday</td>
+                    <td rowspan="2">Thursday</td>
                     <td>3:00 PM - 9:00 PM</td>
                     <td>Special Mission - Tuition Training</td>
                     <td>6 hr</td>
                     <td>Bonus XP</td>
                 </tr>
                 <tr>
-                    <td rowspan="1">Thursday</td>
                     <td>9:00 PM - 10:00 PM</td>
                     <td>Dinner Break</td>
                     <td>1 hr</td>
                     <td>Recharge</td>
                 </tr>
-                <!-- Friday -->
+                <!-- Friday, March 20, 2025 -->
                 <tr>
                     <td rowspan="7">Friday</td>
                     <td>5:00 AM - 7:00 AM</td>
@@ -256,7 +1073,7 @@
                     <td>3 hr</td>
                     <td>Complete Problem Solving</td>
                 </tr>
-                <!-- Saturday & Sunday -->
+                <!-- Saturday & Sunday, March 21-22, 2025 -->
                 <tr>
                     <td>Saturday & Sunday</td>
                     <td>All Day</td>
@@ -294,5 +1111,349 @@
         <canvas id="knowledge-tree-canvas" width="600" height="400"></canvas>
     </div>
 
-    <!-- Rest of the existing HTML (graph-sidebar, marks-input-popup, signin-overlay) unchanged -->
-</body>
+    <div class="graph-sidebar" id="graph-sidebar">
+        <h2 class="graph-title">TEST GRAPH</h2>
+        <div class="graph-container">
+            <canvas id="marksGraph"></canvas>
+        </div>
+        <button class="add-marks-btn" id="add-marks-btn">+</button>
+    </div>
+
+    <div class="marks-input-popup" id="marks-input-popup">
+        <label for="marks-name">Test Name:</label>
+        <input type="text" id="marks-name" placeholder="Enter test name...">
+        <label for="marks-input">Enter your Marks (out of 300):</label>
+        <input type="number" id="marks-input" min="0" max="300" placeholder="Enter marks...">
+        <button id="submit-marks-btn">Submit</button>
+        <button id="cancel-marks-btn" style="background-color: var(--delete-color); margin-top: 0.5rem;">Cancel</button>
+    </div>
+
+    <div class="signin-overlay" id="signin-overlay">
+        <div class="signin-box">
+            <h2>Sign In</h2>
+            <input type="text" id="username" placeholder="Username" required>
+            <input type="password" id="password" placeholder="Password" required>
+            <label><input type="checkbox" id="stay-signed-in"> Stay Signed In</label>
+            <button id="signin-btn">Sign In</button>
+            <p class="signin-error" id="signin-error">Invalid username or password</p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            let gameState = {
+                coins: 0,
+                level: 1,
+                tasksCompleted: 0,
+                tasks: new Map(),
+                streak: 0,
+                lastCompletionDay: null,
+                prestige: 0,
+                multipliers: { base: 1, temp: { value: 1, expiry: null } },
+                dailyQuests: [],
+                achievements: []
+            };
+
+            let subjectProgress = new Map();
+            let currentUser = null;
+            let schedule = [];
+
+            const coinsElement = document.getElementById('coins');
+            const levelElement = document.getElementById('level');
+            const tasksCompletedElement = document.getElementById('tasks-completed');
+            const streakElement = document.getElementById('streak');
+            const progressBarElement = document.getElementById('level-progress-bar');
+            const taskListElement = document.getElementById('task-list');
+            const emptyTasksElement = document.getElementById('empty-tasks');
+            const addTaskForm = document.getElementById('add-task-form');
+            const taskNameInput = document.getElementById('task-name');
+            const deadlineDateInput = document.getElementById('deadline-date');
+            const deadlineTimeInput = document.getElementById('deadline-time');
+            const difficultySelect = document.getElementById('difficulty');
+            const levelUpPopup = document.getElementById('level-up-popup');
+            const newLevelElement = document.getElementById('new-level');
+            const levelUpOkButton = document.getElementById('level-up-ok');
+            const targetsBtn = document.getElementById('targets-btn');
+            const targetsPopup = document.getElementById('targets-popup');
+            const targetsClose = document.getElementById('targets-close');
+            const signinOverlay = document.getElementById('signin-overlay');
+            const signinBtn = document.getElementById('signin-btn');
+            const usernameInput = document.getElementById('username');
+            const passwordInput = document.getElementById('password');
+            const staySignedInCheckbox = document.getElementById('stay-signed-in');
+            const signinError = document.getElementById('signin-error');
+            const mainContent = document.querySelector('.main-content');
+            const signoutBtn = document.getElementById('signout-btn');
+            const graphSidebar = document.getElementById('graph-sidebar');
+            const addMarksBtn = document.getElementById('add-marks-btn');
+            const marksInputPopup = document.getElementById('marks-input-popup');
+            const marksInput = document.getElementById('marks-input');
+            const submitMarksBtn = document.getElementById('submit-marks-btn');
+            const cancelMarksBtn = document.getElementById('cancel-marks-btn');
+            const schedulePopup = document.getElementById('schedule-popup');
+            const scheduleClose = document.getElementById('schedule-close');
+            const editScheduleBtn = document.getElementById('edit-schedule-btn');
+            const analyzeBtn = document.getElementById('analyze-btn');
+            const shopBtn = document.getElementById('shop-btn');
+            const shopPopup = document.getElementById('shop-popup');
+            const shopClose = document.getElementById('shop-close');
+            const prestigeBtn = document.getElementById('prestige-btn');
+            const dailyQuestsElement = document.getElementById('daily-quests');
+            const achievementsBtn = document.getElementById('achievements-btn');
+            const achievementsPopup = document.getElementById('achievements-popup');
+            const achievementsClose = document.getElementById('achievements-close');
+            const achievementsList = document.getElementById('achievements-list');
+            const knowledgeTreeBtn = document.getElementById('knowledge-tree-btn');
+            const knowledgeTreePopup = document.getElementById('knowledge-tree-popup');
+            const knowledgeTreeClose = document.getElementById('knowledge-tree-close');
+            const knowledgeTreeCanvas = document.getElementById('knowledge-tree-canvas');
+
+            const backgroundImages = {
+                0: 'https://assets.grok.com/users/61aa03d5-34a6-451f-a29b-c678af050623/7qqe1265AFQU0oyA-generated_image.jpg',
+                1: 'https://ih1.redbubble.net/image.4971990187.8956/raf,360x360,075,t,fafafa:ca443f4786.jpg',
+                2: 'https://wallpapers.com/images/hd/lo-fi-anime-chill-zpbeiv7k1y45zwat.jpg',
+                3: 'https://i.ytimg.com/vi/KAqUpjcs_xc/hq720.jpg?sqp=-oaymwE7CK4FEIIDSFryq4qpAy0IARUAAAAAGAElAADIQj0AgKJD8AEB-AH-CYAC0AWKAgwIABABGC8gZChyMA8=&rs=AOn4CLBREcqsX48B9zFgdfrQuGwurotqrg',
+                4: 'https://i1.sndcdn.com/artworks-G9UzrSoAlsn4Ed7i-AAjR3Q-t500x500.jpg',
+                5: 'https://i1.sndcdn.com/artworks-RqAOy7Z3ktf3xBLd-5KXuqA-t500x500.jpg'
+            };
+
+            let intervalId = null;
+
+            let marksData = {
+                labels: [],
+                datasets: [{
+                    label: 'Marks',
+                    data: [],
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    fill: false,
+                    tension: 0.1,
+                    pointRadius: 5,
+                    pointHoverRadius: 8
+                }]
+            };
+
+            const ctx = document.getElementById('marksGraph').getContext('2d');
+            const marksChart = new Chart(ctx, {
+                type: 'line',
+                data: marksData,
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 300,
+                            title: { display: true, text: 'Marks', color: '#FFFFFF' },
+                            ticks: { color: '#FFFFFF' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        },
+                        x: {
+                            title: { display: true, text: 'Test', color: '#FFFFFF' },
+                            ticks: { color: '#FFFFFF' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        }
+                    },
+                    plugins: {
+                        legend: { labels: { color: '#FFFFFF' } },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `Marks: ${context.parsed.y} (${marksData.labels[context.dataIndex]})`;
+                                }
+                            }
+                        }
+                    },
+                    onClick: (event, elements) => {
+                        if (elements.length > 0) {
+                            const index = elements[0].index;
+                            showDeleteButton(index);
+                        }
+                    }
+                }
+            });
+
+            function createParticles() {
+                const particleContainer = document.getElementById('particles');
+                const particleCount = 50;
+                for (let i = 0; i < particleCount; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+                    particle.style.left = `${Math.random() * 100}%`;
+                    particle.style.animationDelay = `${Math.random() * 5}s`;
+                    particleContainer.appendChild(particle);
+                }
+            }
+
+            function createStars() {
+                const starContainer = document.getElementById('stars');
+                const starCount = 100;
+                for (let i = 0; i < starCount; i++) {
+                    const star = document.createElement('div');
+                    star.className = 'star';
+                    star.style.left = `${Math.random() * 100}%`;
+                    star.style.top = `${Math.random() * 100}%`;
+                    star.style.animationDelay = `${Math.random() * 2}s`;
+                    starContainer.appendChild(star);
+                }
+            }
+
+            function toggleStarryNight() {
+                document.body.classList.toggle('starry-night');
+                updateBackground();
+            }
+
+            createParticles();
+            createStars();
+
+            function loadUsers() {
+                const users = localStorage.getItem('forestQuestUsers');
+                return users ? JSON.parse(users) : {};
+            }
+
+            function saveUsers(users) {
+                localStorage.setItem('forestQuestUsers', JSON.stringify(users));
+            }
+
+            function loadSignedInUser() {
+                return localStorage.getItem('signedInUser');
+            }
+
+            function saveSignedInUser(username) {
+                localStorage.setItem('signedInUser', username);
+            }
+
+            function clearSignedInUser() {
+                localStorage.removeItem('signedInUser');
+            }
+
+            function signIn(username, password, staySignedIn) {
+                const users = loadUsers();
+                if (users[username] && users[username].password === password) {
+                    currentUser = username;
+                    if (staySignedIn) saveSignedInUser(username);
+                    signinOverlay.style.display = 'none';
+                    mainContent.classList.remove('blur');
+                    signoutBtn.style.display = 'block';
+                    loadGameState();
+                    loadSubjectProgress();
+                    loadMarksData();
+                } else if (!users[username]) {
+                    users[username] = { password: password };
+                    saveUsers(users);
+                    currentUser = username;
+                    if (staySignedIn) saveSignedInUser(username);
+                    signinOverlay.style.display = 'none';
+                    mainContent.classList.remove('blur');
+                    signoutBtn.style.display = 'block';
+                    loadGameState();
+                    loadSubjectProgress();
+                    loadMarksData();
+                } else {
+                    signinError.style.display = 'block';
+                }
+            }
+
+            function signOut() {
+                currentUser = null;
+                clearSignedInUser();
+                signoutBtn.style.display = 'none';
+                mainContent.classList.add('blur');
+                signinOverlay.style.display = 'flex';
+                usernameInput.value = '';
+                passwordInput.value = '';
+                staySignedInCheckbox.checked = false;
+                signinError.style.display = 'none';
+                if (intervalId) clearInterval(intervalId);
+            }
+
+            signinBtn.addEventListener('click', () => {
+                const username = usernameInput.value.trim();
+                const password = passwordInput.value.trim();
+                const staySignedIn = staySignedInCheckbox.checked;
+                if (username && password) signIn(username, password, staySignedIn);
+            });
+
+            signoutBtn.addEventListener('click', signOut);
+
+            function loadSubjectProgress() {
+                if (!currentUser) return;
+                const savedProgress = localStorage.getItem(`subjectProgress_${currentUser}`);
+                if (savedProgress) subjectProgress = new Map(JSON.parse(savedProgress));
+                updateSubjectProgressBars();
+            }
+
+            function saveSubjectProgress() {
+                if (!currentUser) return;
+                localStorage.setItem(`subjectProgress_${currentUser}`, JSON.stringify([...subjectProgress]));
+            }
+
+            function updateSubjectProgressBars() {
+                document.querySelectorAll('.subject-progress').forEach(progressBar => {
+                    const subject = progressBar.dataset.subject;
+                    const questionsDone = parseInt(subjectProgress.get(subject) || 0);
+                    const isClass11 = progressBar.closest('tr').previousElementSibling.previousElementSibling.classList.contains('class-row') && progressBar.closest('tr').previousElementSibling.previousElementSibling.textContent.includes('Class 11');
+                    const totalQuestions = isClass11 ? 112 : 196;
+                    const progressPercentage = Math.min((questionsDone / totalQuestions) * 100, 100);
+                    progressBar.querySelector('.subject-progress-bar').style.width = `${progressPercentage}%`;
+                    const input = progressBar.parentElement.nextElementSibling.querySelector('.progress-input');
+                    input.value = questionsDone > 0 ? `${questionsDone}Q` : '';
+                });
+            }
+
+            function handleProgressInput(event) {
+                const input = event.target;
+                const subject = input.closest('tr').querySelector('.subject-progress').dataset.subject;
+                let value = input.value.replace(/[^0-9]/g, '');
+                if (value === '') value = '0';
+                const questionsDone = parseInt(value);
+                subjectProgress.set(subject, questionsDone);
+                saveSubjectProgress();
+                updateSubjectProgressBars();
+                checkAchievements(subject, questionsDone);
+            }
+
+            function loadMarksData() {
+                if (!currentUser) return;
+                const savedMarks = localStorage.getItem(`marksData_${currentUser}`);
+                if (savedMarks) {
+                    const parsedMarks = JSON.parse(savedMarks);
+                    marksData.labels = parsedMarks.labels;
+                    marksData.datasets[0].data = parsedMarks.data;
+                    marksChart.update();
+                }
+            }
+
+            function saveMarksData() {
+                if (!currentUser) return;
+                localStorage.setItem(`marksData_${currentUser}`, JSON.stringify({ labels: marksData.labels, data: marksData.datasets[0].data }));
+            }
+
+            function loadGameState() {
+                if (!currentUser) return;
+                const savedState = localStorage.getItem(`forestQuestState_${currentUser}`);
+                if (savedState) {
+                    const parsedState = JSON.parse(savedState);
+                    gameState = { ...gameState, ...parsedState, tasks: new Map(parsedState.tasks.map(t => [t.id, t])) };
+                }
+                updateUI();
+                updateBackground();
+                renderTasks();
+                renderDailyQuests();
+                loadMarksData();
+                loadSchedule();
+                checkStreak();
+                if (intervalId) clearInterval(intervalId);
+                intervalId = setInterval(() => { checkDeadlines(); checkDailyQuests(); }, 60000);
+            }
+
+            function saveGameState() {
+                if (!currentUser) return;
+                localStorage.setItem(`forestQuestState_${currentUser}`, JSON.stringify({ ...gameState, tasks: Array.from(gameState.tasks.values()) }));
+            }
+
+            function updateUI() {
+                coinsElement.textContent = gameState.coins;
+                levelElement.textContent = gameState.level;
+                tasksCompletedElement.textContent = gameState.tasksCompleted;
+                streakElement.textContent = gameState.streak;
+                const progress = (gameState.co
