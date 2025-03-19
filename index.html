@@ -3,1729 +3,732 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Forest Quest - Gamified Productivity</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Forest Quest</title>
     <style>
-        :root {
-            --primary-color: #4CAF50;
-            --secondary-color: #388E3C;
-            --accent-color: #FFD700;
-            --light-text: #FFFFFF;
-            --delete-color: #F44336;
-            --task-bg: rgba(40, 40, 40, 0.85);
-            --transition-time: 0.3s;
-            --dark-bg: #1A1A1A;
-            --dark-container: rgba(40, 40, 40, 0.9);
-            --dark-input-bg: #2C2C2C;
-            --overlay: rgba(0, 0, 0, 0.4);
-            --graph-bg: #2A2A2A;
-        }
-
-        * {
+        body {
+            background: url('forest.jpg') no-repeat center center fixed;
+            background-size: cover;
+            font-family: Arial, sans-serif;
+            color: #333;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        body {
-            background-size: contain;
-            background-position: center;
-            background-attachment: fixed;
-            min-height: 100vh;
-            transition: background-image 1s ease-in-out;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            background-color: var(--dark-bg);
-            color: var(--light-text);
-            position: relative;
-        }
-
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: var(--overlay);
-            z-index: -1;
         }
 
         .container {
-            width: 90%;
-            max-width: 800px;
-            margin: 2rem auto;
-            padding: 1.5rem;
-            background-color: var(--dark-container);
-            border-radius: 15px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-            backdrop-filter: blur(10px);
-            color: var(--light-text);
-        }
-
-        header {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-
-        h1 {
-            font-size: 2.5rem;
-            margin-bottom: 0.5rem;
-            color: var(--primary-color);
-            display: inline-flex;
-            align-items: center;
-        }
-
-        .coin-icon {
-            width: 24px;
-            height: 24px;
-            vertical-align: middle;
-            margin-right: 5px;
-        }
-
-        .leaf-icon {
-            width: 30px;
-            height: 30px;
-            vertical-align: middle;
-            margin-left: 10px;
-        }
-
-        .stats {
-            display: flex;
-            justify-content: space-around;
-            margin-bottom: 1.5rem;
-            padding: 1rem;
-            background-color: var(--secondary-color);
-            border-radius: 10px;
-            color: var(--light-text);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        }
-
-        .stat {
-            text-align: center;
-            animation: fadeIn 0.5s ease-in-out;
-        }
-
-        .stat-value {
-            font-size: 1.5rem;
-            font-weight: bold;
-            margin-top: 0.5rem;
-        }
-
-        .level-progress {
-            height: 12px;
-            background-color: #444;
-            border-radius: 6px;
-            margin: 0.5rem 0 1.5rem;
-            overflow: hidden;
-        }
-
-        .progress-bar {
-            height: 100%;
-            background-color: var(--accent-color);
-            border-radius: 6px;
-            transition: width 0.5s ease-in-out;
-        }
-
-        .task-progress {
-            height: 8px;
-            background-color: #444;
-            border-radius: 4px;
-            margin-top: 0.5rem;
-            overflow: hidden;
-        }
-
-        .task-progress-bar {
-            height: 100%;
-            background-color: var(--primary-color);
-            border-radius: 4px;
-            transition: width 0.5s ease-in-out;
-        }
-
-        .targets-btn {
-            margin: 1rem 0;
-            padding: 0.75rem 1.5rem;
-            background-color: var(--accent-color);
-            color: #000;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1rem;
-            font-weight: 500;
-            transition: background-color var(--transition-time) ease, transform var(--transition-time) ease;
-        }
-
-        .targets-btn:hover {
-            background-color: #e6c200;
-            transform: translateY(-2px);
-        }
-
-        .targets-popup {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: rgba(40, 40, 40, 0.95);
-            padding: 1.5rem;
-            border-radius: 10px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            max-height: 80vh;
-            overflow-y: auto;
-            width: 90%;
-            max-width: 700px;
-            z-index: 101;
-            display: none;
-        }
-
-        .targets-close {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: none;
-            border: none;
-            color: var(--light-text);
-            font-size: 1.2rem;
-            cursor: pointer;
-        }
-
-        .targets-table {
-            width: 100%;
-            border-collapse: collapse;
-            color: var(--light-text);
-        }
-
-        .targets-table tr.class-row {
-            background-color: #2F2F2F;
-            font-weight: bold;
-        }
-
-        .targets-table tr.subject-row {
-            background-color: #3A3A3A;
-            font-weight: bold;
-            color: var(--primary-color);
-        }
-
-        body.starry-night .targets-table tr.subject-row {
-            color: #4682B4;
-        }
-
-        .targets-table tr.topic-row {
-            background-color: var(--task-bg);
-        }
-
-        .targets-table td {
-            padding: 0.5rem;
-            border-bottom: 1px solid #444;
-        }
-
-        .subject-progress {
-            height: 10px;
-            background-color: #555;
-            border-radius: 5px;
-            overflow: hidden;
-            width: 150px;
-        }
-
-        .subject-progress-bar {
-            height: 100%;
-            background-color: var(--primary-color);
-            border-radius: 5px;
-            transition: width 0.5s ease-in-out;
-        }
-
-        .progress-input {
-            width: 60px;
-            padding: 0.25rem;
-            border: 1px solid #444;
-            border-radius: 5px;
-            background-color: var(--dark-input-bg);
-            color: var(--light-text);
-            text-align: center;
-        }
-
-        .task-item.overdue .task-progress-bar {
-            background-color: var(--delete-color);
-        }
-
-        .add-task {
-            margin-bottom: 2rem;
-        }
-
-        .add-task-form {
+            max-width: 1200px;
+            margin: 20px auto;
             display: grid;
-            grid-template-columns: 1fr auto;
-            gap: 1rem;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
         }
 
-        .form-group {
-            margin-bottom: 1rem;
-            grid-column: 1 / -1;
+        .dashboard, .stats, .add-task, .task-list, .shop, .achievements, .graph-sidebar {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
 
-        label {
-            display: block;
-            margin-bottom: 0.5rem;
-            color: var(--light-text);
-            font-weight: 500;
-        }
-
-        input, select {
+        .popup {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
-            padding: 0.75rem;
-            border: 1px solid #444;
-            border-radius: 5px;
-            font-size: 1rem;
-            background-color: var(--dark-input-bg);
-            color: var(--light-text);
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
         }
 
-        .deadline-inputs {
+        .popup-content {
+            background: white;
+            margin: 50px auto;
+            padding: 20px;
+            width: 80%;
+            max-width: 600px;
+            border-radius: 10px;
+        }
+
+        .shop-items {
             display: flex;
-            gap: 1rem;
+            gap: 20px;
         }
 
-        .deadline-inputs select, .deadline-inputs input {
-            flex: 1;
+        .shop-item {
+            text-align: center;
+        }
+
+        .shop-item img {
+            width: 50px;
+            height: 50px;
         }
 
         button {
-            padding: 0.75rem 1.5rem;
-            background-color: var(--primary-color);
-            color: var(--light-text);
+            background: #4CAF50;
+            color: white;
             border: none;
+            padding: 5px 10px;
             border-radius: 5px;
             cursor: pointer;
-            font-size: 1rem;
-            font-weight: 500;
-            transition: background-color var(--transition-time) ease, transform var(--transition-time) ease;
         }
 
         button:hover {
-            background-color: var(--secondary-color);
-            transform: translateY(-2px);
+            background: #45a049;
         }
 
-        .task-list {
-            list-style: none;
-            margin-top: 1rem;
-        }
-
-        .task-item {
-            background-color: var(--task-bg);
-            border-radius: 8px;
-            padding: 1rem;
-            margin-bottom: 1rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            animation: slideIn 0.3s ease-out;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            color: var(--light-text);
-        }
-
-        .task-item:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
-        }
-
-        .task-details {
-            flex: 1;
-        }
-
-        .task-name {
-            font-weight: 500;
-            font-size: 1.1rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .task-deadline {
-            color: #B0B0B0;
-            font-size: 0.9rem;
-        }
-
-        .urgent {
-            color: var(--delete-color);
-            font-weight: bold;
-        }
-
-        .task-actions {
-            display: flex;
-            gap: 0.75rem;
-        }
-
-        .complete-btn {
-            background-color: var(--primary-color);
-        }
-
-        .delete-btn {
-            background-color: var(--delete-color);
-        }
-
-        .level-up {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: rgba(0, 0, 0, 0.8);
-            color: var(--light-text);
-            padding: 2rem;
-            border-radius: 15px;
-            text-align: center;
-            z-index: 100;
-            animation: levelUpAnim 1.5s ease-out;
-            display: none;
-        }
-
-        .level-up h2 {
-            font-size: 2rem;
-            margin-bottom: 1rem;
-            color: var(--accent-color);
-        }
-
-        .level-up p {
-            font-size: 1.2rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 2rem;
-            color: #B0B0B0;
-        }
-
-        .blur {
-            filter: blur(5px);
-            pointer-events: none;
-        }
-
-        .signin-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 200;
-        }
-
-        .signin-box {
-            background-color: var(--dark-container);
-            padding: 2rem;
-            border-radius: 10px;
-            width: 90%;
-            max-width: 400px;
-            text-align: center;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-        }
-
-        .signin-box h2 {
-            color: var(--primary-color);
-            margin-bottom: 1.5rem;
-        }
-
-        .signin-box input[type="text"], .signin-box input[type="password"] {
-            margin-bottom: 1rem;
-            padding: 0.75rem;
-            width: 100%;
-            border: 1px solid #444;
-            border-radius: 5px;
-            background-color: var(--dark-input-bg);
-            color: var(--light-text);
-        }
-
-        .signin-box input[type="checkbox"] {
-            margin-right: 0.5rem;
-            vertical-align: middle;
-        }
-
-        .signin-box label {
-            display: inline-block;
-            margin-bottom: 1rem;
-            font-size: 0.9rem;
-        }
-
-        .signin-box button {
-            width: 100%;
-            margin-top: 1rem;
-        }
-
-        .signin-error {
-            color: var(--delete-color);
-            margin-top: 1rem;
-            display: none;
-        }
-
-        .signout-btn {
-            background-color: var(--delete-color);
-            margin-top: 1rem;
-        }
-
-        .graph-sidebar {
-            position: fixed;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background-color: var(--graph-bg);
-            z-index: 102;
-            transition: left var(--transition-time) ease;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 2rem;
-        }
-
-        .graph-sidebar.open {
-            left: 0;
-        }
-
-        .graph-title {
-            color: var(--light-text);
-            font-size: 2rem;
-            margin-bottom: 1rem;
-        }
-
-        .graph-container {
-            width: 90%;
-            max-width: 1000px;
-            height: 80%;
-            background-color: #333;
-            border-radius: 10px;
-            padding: 1rem;
-        }
-
-        .add-marks-btn {
-            margin-top: 1rem;
-            padding: 0.75rem 1.5rem;
-            background-color: var(--primary-color);
-            color: var(--light-text);
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1rem;
-            transition: background-color var(--transition-time) ease;
-        }
-
-        .add-marks-btn:hover {
-            background-color: var(--secondary-color);
-        }
-
-        .marks-input-popup {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: var(--dark-container);
-            padding: 1.5rem;
-            border-radius: 10px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            z-index: 103;
-            display: none;
-        }
-
-        .marks-input-popup input {
-            padding: 0.5rem;
-            margin: 0.5rem 0;
-            width: 100%;
-            background-color: var(--dark-input-bg);
-            color: var(--light-text);
-            border: 1px solid #444;
-            border-radius: 5px;
-        }
-
-        .marks-input-popup button {
-            margin-top: 0.5rem;
-            width: 100%;
-        }
-
-        .schedule-popup {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: rgba(40, 40, 40, 0.95);
-            padding: 1.5rem;
-            border-radius: 10px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            max-height: 80vh;
-            overflow-y: auto;
-            width: 90%;
-            max-width: 800px;
-            z-index: 101;
-            display: none;
-        }
-
-        .schedule-close {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: none;
-            border: none;
-            color: var(--primary-color);
-            font-size: 1.2rem;
-            cursor: pointer;
-        }
-
-        .schedule-table {
+        table {
             width: 100%;
             border-collapse: collapse;
-            color: var(--primary-color);
         }
 
-        .schedule-table th {
-            background-color: #1A1A1A;
-            padding: 0.75rem;
+        th, td {
+            padding: 10px;
             text-align: left;
-            font-weight: bold;
-            border-bottom: 2px solid var(--primary-color);
+            border-bottom: 1px solid #ddd;
         }
 
-        .schedule-table td {
-            background-color: #1A1A1A;
-            padding: 0.75rem;
-            border-bottom: 1px solid #444;
-        }
-
-        #particles {
+        .notifications {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: -1;
+            bottom: 20px;
+            right: 20px;
+            width: 300px;
         }
 
-        .particle {
-            position: absolute;
-            width: 4px;
-            height: 4px;
-            background-color: var(--primary-color);
-            border-radius: 50%;
-            opacity: 0.6;
-            animation: float 6s infinite ease-in-out;
-        }
-
-        @keyframes float {
-            0% { transform: translateY(100vh); opacity: 0; }
-            20% { opacity: 0.6; }
-            80% { opacity: 0.6; }
-            100% { transform: translateY(-10vh); opacity: 0; }
-        }
-
-        #stars {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: -1;
-            display: none;
-        }
-
-        .star {
-            position: absolute;
-            width: 2px;
-            height: 2px;
-            background-color: #FFFFFF;
-            border-radius: 50%;
-            opacity: 0;
-        }
-
-        @keyframes twinkle {
-            0% { opacity: 0; }
-            50% { opacity: 1; }
-            100% { opacity: 0; }
-        }
-
-        body.starry-night {
-            --primary-color: #4682B4;
-            --secondary-color: #2F5A78;
-            --accent-color: #FFDAB9;
-            --dark-bg: #0D1B2A;
-            background: url('https://static.vecteezy.com/system/resources/thumbnails/023/887/107/small/seamless-loop-galaxy-exploration-through-outer-space-towards-glowing-milky-way-galaxy-4k-looping-animation-of-flying-through-glowing-nebulae-clouds-and-stars-field-elements-free-video.jpg') no-repeat center center fixed;
-            background-size: cover;
-        }
-
-        body.starry-night #stars {
-            display: block;
-        }
-
-        body.starry-night .star {
-            animation: twinkle 3s infinite ease-in-out;
-            opacity: 1;
-        }
-
-        body.starry-night #particles {
-            display: none;
-        }
-
-        body.starry-night .targets-btn:hover {
-            background-color: #e6b999;
-        }
-
-        body.starry-night button:hover {
-            background-color: var(--secondary-color);
-        }
-
-        @keyframes levelUpAnim {
-            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
-            50% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
-            100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        @keyframes slideIn {
-            from { transform: translateY(20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        @keyframes coinAdd {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.5); color: var(--accent-color); }
-            100% { transform: scale(1); }
-        }
-
-        .coin-animation {
-            animation: coinAdd 0.5s ease-out;
-        }
-
-        @media (max-width: 600px) {
-            .add-task-form {
-                grid-template-columns: 1fr;
-            }
-            
-            .deadline-inputs {
-                flex-direction: column;
-            }
-            
-            .task-item {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            
-            .task-actions {
-                width: 100%;
-                margin-top: 1rem;
-                justify-content: flex-end;
-            }
-
-            .targets-table td {
-                padding: 0.3rem;
-            }
-
-            .subject-progress {
-                width: 100px;
-            }
-
-            .progress-input {
-                width: 50px;
-            }
+        .notification {
+            background: #f44336;
+            color: white;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
         }
     </style>
 </head>
 <body>
-    <div id="particles"></div>
-    <div id="stars"></div>
-    <div class="container main-content">
-        <header>
-            <h1>Forest Quest<img src="https://i.ytimg.com/vi/eTeBsgG3lkw/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLBsbiZakg7W-jPkhJtBh3mS2zeNrQ" alt="Leaf" class="leaf-icon"></h1>
-            <p>Complete tasks, earn coins, level up, and transform your forest!</p>
-        </header>
+    <div class="container">
+        <!-- Dashboard -->
+        <div class="dashboard">
+            <h2>Dashboard</h2>
+            <p>Level: <span id="dashboard-level">1</span></p>
+            <p>Coins: <span id="dashboard-coins">0</span></p>
+            <p>Active Tasks: <span id="dashboard-tasks">0</span></p>
+            <p>Streak: <span id="dashboard-streak">0 days</span></p>
+            <button id="shop-btn">Shop</button>
+            <button id="schedule-btn">Schedule</button>
+            <button id="targets-btn">Targets</button>
+        </div>
 
-        <button class="signout-btn" id="signout-btn" style="display: none;">Sign Out</button>
-
+        <!-- Stats -->
         <div class="stats">
-            <div class="stat">
-                <div>LEVEL</div>
-                <div class="stat-value" id="level">1</div>
-            </div>
-            <div class="stat">
-                <div><img src="https://pngimg.com/d/coin_PNG36871.png" alt="Coin" class="coin-icon"></div>
-                <div class="stat-value" id="coins">0</div>
-            </div>
-            <div class="stat">
-                <div>TASKS DONE</div>
-                <div class="stat-value" id="tasks-completed">0</div>
-            </div>
+            <h2>Stats</h2>
+            <p>Level: <span id="level">1</span></p>
+            <p>Coins: <span id="coins">0</span></p>
+            <p>Tasks Completed: <span id="tasks-completed">0</span></p>
+            <p>Streak: <span id="streak">0 days</span></p>
+            <p>Daily Quest: <span id="daily-quest">None</span></p>
         </div>
 
-        <div>
-            <div>Level Progress</div>
-            <div class="level-progress">
-                <div class="progress-bar" id="level-progress-bar" style="width: 0%"></div>
-            </div>
-        </div>
-
+        <!-- Add Task -->
         <div class="add-task">
-            <h2>Add New Task</h2>
-            <form id="add-task-form" class="add-task-form">
-                <div class="form-group">
-                    <label for="task-name">Task Name:</label>
-                    <input type="text" id="task-name" required placeholder="Enter task name...">
-                </div>
-
-                <div class="form-group">
-                    <label for="deadline-date">Deadline:</label>
-                    <div class="deadline-inputs">
-                        <input type="date" id="deadline-date" required>
-                        <input type="time" id="deadline-time" required>
-                    </div>
-                </div>
-
+            <h2>Add Task</h2>
+            <form id="add-task-form">
+                <input type="text" id="task-name" placeholder="Task Name" required>
+                <input type="datetime-local" id="task-deadline" required>
+                <select id="task-difficulty">
+                    <option value="easy">Easy (50 coins)</option>
+                    <option value="medium">Medium (100 coins)</option>
+                    <option value="hard">Hard (150 coins)</option>
+                </select>
                 <button type="submit">Add Task</button>
             </form>
         </div>
 
-        <button class="targets-btn" id="targets-btn">Targets</button>
-
-        <div>
+        <!-- Task List -->
+        <div class="task-list">
             <h2>Tasks</h2>
-            <ul id="task-list" class="task-list">
-                <div class="empty-state" id="empty-tasks">
-                    <p>You have no tasks yet. Add a task to get started!</p>
+            <ul id="tasks"></ul>
+        </div>
+
+        <!-- Shop -->
+        <div class="shop" id="shop">
+            <h2>Shop</h2>
+            <div class="shop-items">
+                <div class="shop-item">
+                    <img src="tree.png" alt="New Tree">
+                    <p>New Tree - 500 coins</p>
+                    <button class="buy-btn" data-item="tree">Buy</button>
                 </div>
-            </ul>
+                <div class="shop-item">
+                    <img src="bird.png" alt="Bird">
+                    <p>Bird - 300 coins</p>
+                    <button class="buy-btn" data-item="bird">Buy</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Achievements -->
+        <div class="achievements" id="achievements">
+            <h2>Achievements</h2>
+            <div class="achievement-list" id="achievement-list"></div>
+        </div>
+
+        <!-- Targets Popup -->
+        <div class="popup" id="targets-popup">
+            <div class="popup-content">
+                <h2>Subject Progress</h2>
+                <button id="toggle-knowledge-tree">Toggle Knowledge Tree</button>
+                <table id="targets-table">
+                    <thead>
+                        <tr>
+                            <th>Subject</th>
+                            <th>Progress</th>
+                            <th>Challenge</th>
+                        </tr>
+                    </thead>
+                    <tbody id="targets-body"></tbody>
+                </table>
+                <canvas id="knowledge-tree" width="400" height="300" style="display: none;"></canvas>
+                <button class="close-btn" id="close-targets">Close</button>
+            </div>
+        </div>
+
+        <!-- Schedule Popup -->
+        <div class="popup" id="schedule-popup">
+            <div class="popup-content">
+                <h2>Schedule</h2>
+                <form id="add-schedule-form">
+                    <input type="time" id="schedule-time" required>
+                    <input type="text" id="schedule-activity" placeholder="Activity" required>
+                    <input type="number" id="schedule-duration" placeholder="Duration (min)" required>
+                    <button type="submit">Add Block</button>
+                </form>
+                <table class="schedule-table">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Activity</th>
+                            <th>Duration</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="schedule-body"></tbody>
+                </table>
+                <div class="pomodoro-timer">
+                    <h3>Pomodoro Timer</h3>
+                    <p id="timer-display">25:00</p>
+                    <button id="start-pomodoro">Start</button>
+                    <button id="stop-pomodoro">Stop</button>
+                </div>
+                <button class="close-btn" id="close-schedule">Close</button>
+            </div>
+        </div>
+
+        <!-- Test Marks Graph -->
+        <div class="graph-sidebar">
+            <h2>Test Marks</h2>
+            <form id="add-mark-form">
+                <input type="number" id="test-mark" placeholder="Score" required>
+                <input type="number" id="test-total" placeholder="Total" required>
+                <button type="submit">Add Mark</button>
+            </form>
+            <input type="number" id="goal-score" placeholder="Set Goal Score">
+            <button id="set-goal">Set Goal</button>
+            <canvas id="marks-graph" width="300" height="200"></canvas>
+            <p>Prediction: <span id="score-prediction">N/A</span></p>
         </div>
     </div>
-
-    <div class="level-up" id="level-up-popup">
-        <h2>Level Up!</h2>
-        <p>You've reached Level <span id="new-level">2</span>!</p>
-        <p>Your forest is growing and transforming...</p>
-        <button id="level-up-ok">Continue</button>
-    </div>
-
-    <div class="targets-popup" id="targets-popup">
-        <button class="targets-close" id="targets-close">X</button>
-        <table class="targets-table">
-            <tbody>
-                <!-- Class 11 -->
-                <tr class="class-row"><td colspan="3">Class 11</td></tr>
-                <!-- Physics -->
-                <tr class="subject-row"><td colspan="3">Physics</td></tr>
-                <tr class="topic-row"><td>Physical World and Measurement</td><td><div class="subject-progress" data-subject="Physical World and Measurement"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>Kinematics</td><td><div class="subject-progress" data-subject="Kinematics"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>Laws of Motion</td><td><div class="subject-progress" data-subject="Laws of Motion"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>Work, Energy and Power</td><td><div class="subject-progress" data-subject="Work, Energy and Power"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>Motion of System of Particles and Rigid Body</td><td><div class="subject-progress" data-subject="Motion of System of Particles and Rigid Body"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>Gravitation</td><td><div class="subject-progress" data-subject="Gravitation"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>Properties of Bulk Matter</td><td><div class="subject-progress" data-subject="Properties of Bulk Matter"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>Thermodynamics</td><td><div class="subject-progress" data-subject="Thermodynamics (Physics Class 11)"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>Behavior of Perfect Gas and Kinetic Theory</td><td><div class="subject-progress" data-subject="Behavior of Perfect Gas and Kinetic Theory"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>Oscillations and Waves</td><td><div class="subject-progress" data-subject="Oscillations and Waves"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <!-- Chemistry -->
-                <tr class="subject-row"><td colspan="3">Chemistry</td></tr>
-                <tr class="topic-row"><td>Some Basic Concepts of Chemistry</td><td><div class="subject-progress" data-subject="Some Basic Concepts of Chemistry"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>Structure of Atom</td><td><div class="subject-progress" data-subject="Structure of Atom"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>Classification of Elements and Periodicity in Properties</td><td><div class="subject-progress" data-subject="Classification of Elements and Periodicity in Properties"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>Chemical Bonding and Molecular Structure</td><td><div class="subject-progress" data-subject="Chemical Bonding and Molecular Structure"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>States of Matter: Gases and Liquids</td><td><div class="subject-progress" data-subject="States of Matter: Gases and Liquids"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>Thermodynamics</td><td><div class="subject-progress" data-subject="Thermodynamics (Chemistry Class 11)"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>Equilibrium</td><td><div class="subject-progress" data-subject="Equilibrium"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>Redox Reactions</td><td><div class="subject-progress" data-subject="Redox Reactions"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>Hydrogen</td><td><div class="subject-progress" data-subject="Hydrogen"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>s-Block Element (Alkali and Alkaline earth metals)</td><td><div class="subject-progress" data-subject="s-Block Element (Alkali and Alkaline earth metals)"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>Some p-Block Elements</td><td><div class="subject-progress" data-subject="Some p-Block Elements"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>Organic Chemistry - Some Basic Principles and Techniques</td><td><div class="subject-progress" data-subject="Organic Chemistry - Some Basic Principles and Techniques"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>Hydrocarbons</td><td><div class="subject-progress" data-subject="Hydrocarbons"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>Environmental Chemistry</td><td><div class="subject-progress" data-subject="Environmental Chemistry"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <!-- Mathematics -->
-                <tr class="subject-row"><td colspan="3">Mathematics</td></tr>
-                <tr class="topic-row"><td>Sets and Functions</td><td><div class="subject-progress" data-subject="Sets and Functions"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>Trigonometric Functions</td><td><div class="subject-progress" data-subject="Trigonometric Functions"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>Complex Numbers and Quadratic Equations</td><td><div class="subject-progress" data-subject="Complex Numbers and Quadratic Equations"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>Linear Inequalities</td><td><div class="subject-progress" data-subject="Linear Inequalities"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>Permutations and Combinations</td><td><div class="subject-progress" data-subject="Permutations and Combinations (Class 11)"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>Binomial Theorem</td><td><div class="subject-progress" data-subject="Binomial Theorem"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>Sequences and Series</td><td><div class="subject-progress" data-subject="Sequences and Series"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>Straight Lines</td><td><div class="subject-progress" data-subject="Straight Lines"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>Conic Sections</td><td><div class="subject-progress" data-subject="Conic Sections"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>Introduction to Three-Dimensional Geometry</td><td><div class="subject-progress" data-subject="Introduction to Three-Dimensional Geometry"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>Limits and Derivatives</td><td><div class="subject-progress" data-subject="Limits and Derivatives"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>Mathematical Reasoning</td><td><div class="subject-progress" data-subject="Mathematical Reasoning"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>Statistics and Probability</td><td><div class="subject-progress" data-subject="Statistics and Probability (Class 11)"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>Mathematical Induction</td><td><div class="subject-progress" data-subject="Mathematical Induction"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <!-- Class 12 -->
-                <tr class="class-row"><td colspan="3">Class 12</td></tr>
-                <!-- Physics -->
-                <tr class="subject-row"><td colspan="3">Physics</td></tr>
-                <tr class="topic-row"><td>Electrostatics</td><td><div class="subject-progress" data-subject="Electrostatics"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>Current Electricity</td><td><div class="subject-progress" data-subject="Current Electricity"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>Magnetic Effects of Current and Magnetism</td><td><div class="subject-progress" data-subject="Magnetic Effects of Current and Magnetism"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>Electromagnetic Induction and Alternating Currents</td><td><div class="subject-progress" data-subject="Electromagnetic Induction and Alternating Currents"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>Electromagnetic Waves</td><td><div class="subject-progress" data-subject="Electromagnetic Waves"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>Optics</td><td><div class="subject-progress" data-subject="Optics"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>Dual Nature of Matter and Radiation</td><td><div class="subject-progress" data-subject="Dual Nature of Matter and Radiation"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>Atoms and Nuclei</td><td><div class="subject-progress" data-subject="Atoms and Nuclei"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>Electronic Devices</td><td><div class="subject-progress" data-subject="Electronic Devices"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <!-- Chemistry -->
-                <tr class="subject-row"><td colspan="3">Chemistry</td></tr>
-                <tr class="topic-row"><td>Solid State</td><td><div class="subject-progress" data-subject="Solid State"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>Solutions</td><td><div class="subject-progress" data-subject="Solutions"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>Electrochemistry</td><td><div class="subject-progress" data-subject="Electrochemistry"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>Chemical Kinetics</td><td><div class="subject-progress" data-subject="Chemical Kinetics"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>Surface Chemistry</td><td><div class="subject-progress" data-subject="Surface Chemistry"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>General Principles and Processes of Isolation of Elements</td><td><div class="subject-progress" data-subject="General Principles and Processes of Isolation of Elements"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>p-Block Elements</td><td><div class="subject-progress" data-subject="p-Block Elements"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>d and f Block Elements</td><td><div class="subject-progress" data-subject="d and f Block Elements"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>Coordination Compounds</td><td><div class="subject-progress" data-subject="Coordination Compounds"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>Haloalkanes and Haloarenes</td><td><div class="subject-progress" data-subject="Haloalkanes and Haloarenes"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>Alcohols, Phenols and Ethers</td><td><div class="subject-progress" data-subject="Alcohols, Phenols and Ethers"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>Aldehydes, Ketones and Carboxylic Acids</td><td><div class="subject-progress" data-subject="Aldehydes, Ketones and Carboxylic Acids"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>Organic Compounds Containing Nitrogen</td><td><div class="subject-progress" data-subject="Organic Compounds Containing Nitrogen"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>Biomolecules</td><td><div class="subject-progress" data-subject="Biomolecules"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>Polymers</td><td><div class="subject-progress" data-subject="Polymers"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>Chemistry in Everyday Life</td><td><div class="subject-progress" data-subject="Chemistry in Everyday Life"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <!-- Mathematics -->
-                <tr class="subject-row"><td colspan="3">Mathematics</td></tr>
-                <tr class="topic-row"><td>Relations and Functions</td><td><div class="subject-progress" data-subject="Relations and Functions"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>Inverse Trigonometric Functions</td><td><div class="subject-progress" data-subject="Inverse Trigonometric Functions"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>Matrices and Determinants</td><td><div class="subject-progress" data-subject="Matrices and Determinants"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>Continuity and Differentiability</td><td><div class="subject-progress" data-subject="Continuity and Differentiability"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>Application of Derivatives</td><td><div class="subject-progress" data-subject="Application of Derivatives"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>Integrals</td><td><div class="subject-progress" data-subject="Integrals"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>Applications of Integrals</td><td><div class="subject-progress" data-subject="Applications of Integrals"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>Differential Equations</td><td><div class="subject-progress" data-subject="Differential Equations"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>Vectors</td><td><div class="subject-progress" data-subject="Vectors"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>Three-Dimensional Geometry</td><td><div class="subject-progress" data-subject="Three-Dimensional Geometry"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>Linear Programming</td><td><div class="subject-progress" data-subject="Linear Programming"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-                <tr class="topic-row"><td>Probability</td><td><div class="subject-progress" data-subject="Probability"><div class="subject-progress-bar"></div></div></td><td><input type="text" class="progress-input" placeholder="0Q"></td></tr>
-            </tbody>
-        </table>
-    </div>
-
-    <div class="schedule-popup" id="schedule-popup">
-        <button class="schedule-close" id="schedule-close">X</button>
-        <table class="schedule-table">
-            <thead>
-                <tr>
-                    <th>Time</th>
-                    <th>Activity</th>
-                    <th>Duration</th>
-                    <th>Notes</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>8:00 - 8:30 AM</td>
-                    <td>Pre-Sun Prep</td>
-                    <td>30 min</td>
-                    <td>Stretch by window, sip water, review notes. Diffuse light warm-up.</td>
-                </tr>
-                <tr>
-                    <td>8:30 - 9:00 AM</td>
-                    <td>Suntime Ritual</td>
-                    <td>30 min</td>
-                    <td>Direct rays at window—coffee, music, bask. Step out if clouds block.</td>
-                </tr>
-                <tr>
-                    <td>9:00 - 10:30 AM</td>
-                    <td>Study Block 1 (Problem-Solving)</td>
-                    <td>1 hr 30 min</td>
-                    <td>Deep study by window—diffuse light. Focus on problem sets or tough stuff.</td>
-                </tr>
-                <tr>
-                    <td>10:30 - 10:45 AM</td>
-                    <td>Breakfast + Sun Snipe</td>
-                    <td>15 min</td>
-                    <td>Quick meal (toast, fruit) + 5-10 min outside in sun.</td>
-                </tr>
-                <tr>
-                    <td>10:45 - 11:00 AM</td>
-                    <td>Transition/Buffer</td>
-                    <td>15 min</td>
-                    <td>Walk to lecture spot, grab stuff—light stretch if nearby.</td>
-                </tr>
-                <tr>
-                    <td>11:00 AM - 3:00 PM</td>
-                    <td>Lecture (Compulsory)</td>
-                    <td>4 hrs</td>
-                    <td>Class time—counts as study. Hopefully near a window or outdoors!</td>
-                </tr>
-                <tr>
-                    <td>3:00 - 3:30 PM</td>
-                    <td>Lunch + Park Sun Raid</td>
-                    <td>30 min</td>
-                    <td>Eat fast (sandwich, rice) + 10-15 min park walk for direct rays.</td>
-                </tr>
-                <tr>
-                    <td>3:30 - 5:00 PM</td>
-                    <td>Study Block 2 (Problem-Solving)</td>
-                    <td>1 hr 30 min</td>
-                    <td>By window—diffuse light. More problem sets or review lecture notes.</td>
-                </tr>
-                <tr>
-                    <td>5:00 - 5:30 PM</td>
-                    <td>Dinner Break</td>
-                    <td>30 min</td>
-                    <td>Warm meal (soup, pasta) by window—open it if sun’s still up.</td>
-                </tr>
-                <tr>
-                    <td>5:30 - 6:30 PM</td>
-                    <td>Rest</td>
-                    <td>1 hr</td>
-                    <td>Nap, scroll phone, chill by window—recharge with diffuse light/air.</td>
-                </tr>
-                <tr>
-                    <td>6:30 - 8:30 PM</td>
-                    <td>Study Block 3 (Self-Study)</td>
-                    <td>2 hrs</td>
-                    <td>By window—diffuse fading. Review, read, or lighter study tasks.</td>
-                </tr>
-                <tr>
-                    <td>8:30 - 8:45 PM</td>
-                    <td>Quick Stretch Break</td>
-                    <td>15 min</td>
-                    <td>Pace by window, snack (nuts, chocolate)—shake off stiffness.</td>
-                </tr>
-                <tr>
-                    <td>8:45 - 10:15 PM</td>
-                    <td>Study Block 4 (Problem-Solving)</td>
-                    <td>1 hr 30 min</td>
-                    <td>Window spot, artificial light—tackle problems or wrap up lecture prep.</td>
-                </tr>
-                <tr>
-                    <td>10:15 - 10:30 PM</td>
-                    <td>Wind-Down</td>
-                    <td>15 min</td>
-                    <td>Music, deep breaths by window—GABA vibes to relax.</td>
-                </tr>
-                <tr>
-                    <td>10:30 PM - 1:00 AM</td>
-                    <td>Flex Time (Optional Study/Rest)</td>
-                    <td>2 hrs 30 min</td>
-                    <td>Extra problem-solving (up to 12 hrs total study) or sleep prep.</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-
-    <div class="graph-sidebar" id="graph-sidebar">
-        <h2 class="graph-title">TEST GRAPH</h2>
-        <div class="graph-container">
-            <canvas id="marksGraph"></canvas>
-        </div>
-        <button class="add-marks-btn" id="add-marks-btn">+</button>
-    </div>
-
-    <div class="marks-input-popup" id="marks-input-popup">
-        <label for="marks-name">Test Name:</label>
-        <input type="text" id="marks-name" placeholder="Enter test name...">
-        <label for="marks-input">Enter your Marks (out of 300):</label>
-        <input type="number" id="marks-input" min="0" max="300" placeholder="Enter marks...">
-        <button id="submit-marks-btn">Submit</button>
-        <button id="cancel-marks-btn" style="background-color: var(--delete-color); margin-top: 0.5rem;">Cancel</button>
-    </div>
-
-    <div class="signin-overlay" id="signin-overlay">
-        <div class="signin-box">
-            <h2>Sign In</h2>
-            <input type="text" id="username" placeholder="Username" required>
-            <input type="password" id="password" placeholder="Password" required>
-            <label><input type="checkbox" id="stay-signed-in"> Stay Signed In</label>
-            <button id="signin-btn">Sign In</button>
-            <p class="signin-error" id="signin-error">Invalid username or password</p>
-        </div>
-    </div>
-
+    <div class="notifications" id="notifications"></div>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // **Game State**
             let gameState = {
                 coins: 0,
                 level: 1,
                 tasksCompleted: 0,
-                tasks: new Map()
+                tasks: new Map(),
+                streak: { current: 0, lastCompletionDate: null },
+                dailyQuest: { type: '', progress: 0, goal: 0, reward: 0 },
+                prestige: 0,
+                multipliers: [],
+                achievements: [],
+                schedule: [],
+                pomodoro: { active: false, timeLeft: 0, break: false },
+                notifications: [],
+                subjects: new Map([['Physics', 0], ['Chemistry', 0], ['Math', 0]]),
+                marks: [],
+                goalScore: null
             };
 
-            let subjectProgress = new Map();
-            let currentUser = null;
-
-            const coinsElement = document.getElementById('coins');
-            const levelElement = document.getElementById('level');
-            const tasksCompletedElement = document.getElementById('tasks-completed');
-            const progressBarElement = document.getElementById('level-progress-bar');
-            const taskListElement = document.getElementById('task-list');
-            const emptyTasksElement = document.getElementById('empty-tasks');
-            const addTaskForm = document.getElementById('add-task-form');
-            const taskNameInput = document.getElementById('task-name');
-            const deadlineDateInput = document.getElementById('deadline-date');
-            const deadlineTimeInput = document.getElementById('deadline-time');
-            const levelUpPopup = document.getElementById('level-up-popup');
-            const newLevelElement = document.getElementById('new-level');
-            const levelUpOkButton = document.getElementById('level-up-ok');
-            const targetsBtn = document.getElementById('targets-btn');
-            const targetsPopup = document.getElementById('targets-popup');
-            const targetsClose = document.getElementById('targets-close');
-            const signinOverlay = document.getElementById('signin-overlay');
-            const signinBtn = document.getElementById('signin-btn');
-            const usernameInput = document.getElementById('username');
-            const passwordInput = document.getElementById('password');
-            const staySignedInCheckbox = document.getElementById('stay-signed-in');
-            const signinError = document.getElementById('signin-error');
-            const mainContent = document.querySelector('.main-content');
-            const signoutBtn = document.getElementById('signout-btn');
-            const graphSidebar = document.getElementById('graph-sidebar');
-            const addMarksBtn = document.getElementById('add-marks-btn');
-            const marksInputPopup = document.getElementById('marks-input-popup');
-            const marksInput = document.getElementById('marks-input');
-            const submitMarksBtn = document.getElementById('submit-marks-btn');
-            const cancelMarksBtn = document.getElementById('cancel-marks-btn');
-            const schedulePopup = document.getElementById('schedule-popup');
-            const scheduleClose = document.getElementById('schedule-close');
-
-            const backgroundImages = {
-                0: 'https://assets.grok.com/users/61aa03d5-34a6-451f-a29b-c678af050623/7qqe1265AFQU0oyA-generated_image.jpg',
-                1: 'https://ih1.redbubble.net/image.4971990187.8956/raf,360x360,075,t,fafafa:ca443f4786.jpg',
-                2: 'https://wallpapers.com/images/hd/lo-fi-anime-chill-zpbeiv7k1y45zwat.jpg',
-                3: 'https://i.ytimg.com/vi/KAqUpjcs_xc/hq720.jpg?sqp=-oaymwE7CK4FEIIDSFryq4qpAy0IARUAAAAAGAElAADIQj0AgKJD8AEB-AH-CYAC0AWKAgwIABABGC8gZChyMA8=&rs=AOn4CLBREcqsX48B9zFgdfrQuGwurotqrg',
-                4: 'https://i1.sndcdn.com/artworks-G9UzrSoAlsn4Ed7i-AAjR3Q-t500x500.jpg',
-                5: 'https://i1.sndcdn.com/artworks-RqAOy7Z3ktf3xBLd-5KXuqA-t500x500.jpg'
-            };
-
-            let intervalId = null;
-
-            let marksData = {
-                labels: [],
-                datasets: [{
-                    label: 'Marks',
-                    data: [],
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                    fill: false,
-                    tension: 0.1,
-                    pointRadius: 5,
-                    pointHoverRadius: 8
-                }]
-            };
-
-            const ctx = document.getElementById('marksGraph').getContext('2d');
-            const marksChart = new Chart(ctx, {
-                type: 'line',
-                data: marksData,
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            max: 300,
-                            title: {
-                                display: true,
-                                text: 'Marks',
-                                color: '#FFFFFF'
-                            },
-                            ticks: {
-                                color: '#FFFFFF'
-                            },
-                            grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
-                            }
-                        },
-                        x: {
-                            title: {
-                                display: true,
-                                text: 'Test',
-                                color: '#FFFFFF'
-                            },
-                            ticks: {
-                                color: '#FFFFFF'
-                            },
-                            grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            labels: {
-                                color: '#FFFFFF'
-                            }
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return `Marks: ${context.parsed.y} (${marksData.labels[context.dataIndex]})`;
-                                }
-                            }
-                        }
-                    },
-                    onClick: (event, elements) => {
-                        if (elements.length > 0) {
-                            const index = elements[0].index;
-                            showDeleteButton(index);
-                        }
-                    }
-                }
-            });
-
-            function createParticles() {
-                const particleContainer = document.getElementById('particles');
-                const particleCount = 50;
-                for (let i = 0; i < particleCount; i++) {
-                    const particle = document.createElement('div');
-                    particle.className = 'particle';
-                    particle.style.left = `${Math.random() * 100}%`;
-                    particle.style.animationDelay = `${Math.random() * 5}s`;
-                    particleContainer.appendChild(particle);
-                }
-            }
-
-            function createStars() {
-                const starContainer = document.getElementById('stars');
-                const starCount = 100;
-                for (let i = 0; i < starCount; i++) {
-                    const star = document.createElement('div');
-                    star.className = 'star';
-                    star.style.left = `${Math.random() * 100}%`;
-                    star.style.top = `${Math.random() * 100}%`;
-                    star.style.animationDelay = `${Math.random() * 2}s`;
-                    starContainer.appendChild(star);
-                }
-            }
-
-            function toggleStarryNight() {
-                document.body.classList.toggle('starry-night');
-                updateBackground();
-            }
-
-            createParticles();
-            createStars();
-
-            function loadUsers() {
-                const users = localStorage.getItem('forestQuestUsers');
-                return users ? JSON.parse(users) : {};
-            }
-
-            function saveUsers(users) {
-                localStorage.setItem('forestQuestUsers', JSON.stringify(users));
-            }
-
-            function loadSignedInUser() {
-                return localStorage.getItem('signedInUser');
-            }
-
-            function saveSignedInUser(username) {
-                localStorage.setItem('signedInUser', username);
-            }
-
-            function clearSignedInUser() {
-                localStorage.removeItem('signedInUser');
-            }
-
-            function signIn(username, password, staySignedIn) {
-                const users = loadUsers();
-                if (users[username] && users[username].password === password) {
-                    currentUser = username;
-                    if (staySignedIn) {
-                        saveSignedInUser(username);
-                    }
-                    signinOverlay.style.display = 'none';
-                    mainContent.classList.remove('blur');
-                    signoutBtn.style.display = 'block';
-                    loadGameState();
-                    loadSubjectProgress();
-                    loadMarksData();
-                } else if (!users[username]) {
-                    users[username] = { password: password };
-                    saveUsers(users);
-                    currentUser = username;
-                    if (staySignedIn) {
-                        saveSignedInUser(username);
-                    }
-                    signinOverlay.style.display = 'none';
-                    mainContent.classList.remove('blur');
-                    signoutBtn.style.display = 'block';
-                    loadGameState();
-                    loadSubjectProgress();
-                    loadMarksData();
-                } else {
-                    signinError.style.display = 'block';
-                }
-            }
-
-            function signOut() {
-                currentUser = null;
-                clearSignedInUser();
-                signoutBtn.style.display = 'none';
-                mainContent.classList.add('blur');
-                signinOverlay.style.display = 'flex';
-                usernameInput.value = '';
-                passwordInput.value = '';
-                staySignedInCheckbox.checked = false;
-                signinError.style.display = 'none';
-                if (intervalId) {
-                    clearInterval(intervalId);
-                }
-            }
-
-            signinBtn.addEventListener('click', () => {
-                const username = usernameInput.value.trim();
-                const password = passwordInput.value.trim();
-                const staySignedIn = staySignedInCheckbox.checked;
-                if (username && password) {
-                    signIn(username, password, staySignedIn);
-                }
-            });
-
-            signoutBtn.addEventListener('click', signOut);
-
-            function loadSubjectProgress() {
-                if (!currentUser) return;
-                const savedProgress = localStorage.getItem(`subjectProgress_${currentUser}`);
-                if (savedProgress) {
-                    subjectProgress = new Map(JSON.parse(savedProgress));
-                }
-                updateSubjectProgressBars();
-            }
-
-            function saveSubjectProgress() {
-                if (!currentUser) return;
-                localStorage.setItem(`subjectProgress_${currentUser}`, JSON.stringify([...subjectProgress]));
-            }
-
-            function updateSubjectProgressBars() {
-                document.querySelectorAll('.subject-progress').forEach(progressBar => {
-                    const subject = progressBar.dataset.subject;
-                    const questionsDone = parseInt(subjectProgress.get(subject) || 0);
-                    const isClass11 = progressBar.closest('tr').previousElementSibling.previousElementSibling.classList.contains('class-row') && progressBar.closest('tr').previousElementSibling.previousElementSibling.textContent.includes('Class 11');
-                    const totalQuestions = isClass11 ? 112 : 196;
-                    const progressPercentage = Math.min((questionsDone / totalQuestions) * 100, 100);
-                    progressBar.querySelector('.subject-progress-bar').style.width = `${progressPercentage}%`;
-                    const input = progressBar.parentElement.nextElementSibling.querySelector('.progress-input');
-                    input.value = questionsDone > 0 ? `${questionsDone}Q` : '';
-                });
-            }
-
-            function handleProgressInput(event) {
-                const input = event.target;
-                const subject = input.closest('tr').querySelector('.subject-progress').dataset.subject;
-                let value = input.value.replace(/[^0-9]/g, '');
-                if (value === '') value = '0';
-                const questionsDone = parseInt(value);
-                subjectProgress.set(subject, questionsDone);
-                saveSubjectProgress();
-                updateSubjectProgressBars();
-            }
-
-            function loadMarksData() {
-                if (!currentUser) return;
-                const savedMarks = localStorage.getItem(`marksData_${currentUser}`);
-                if (savedMarks) {
-                    const parsedMarks = JSON.parse(savedMarks);
-                    marksData.labels = parsedMarks.labels;
-                    marksData.datasets[0].data = parsedMarks.data;
-                    marksChart.update();
-                }
-            }
-
-            function saveMarksData() {
-                if (!currentUser) return;
-                const dataToSave = {
-                    labels: marksData.labels,
-                    data: marksData.datasets[0].data
-                };
-                localStorage.setItem(`marksData_${currentUser}`, JSON.stringify(dataToSave));
-            }
-
+            // **Load and Save Game State**
             function loadGameState() {
-                if (!currentUser) return;
-                const savedState = localStorage.getItem(`forestQuestState_${currentUser}`);
-                if (savedState) {
-                    const parsedState = JSON.parse(savedState);
-                    gameState.coins = parsedState.coins || 0;
-                    gameState.level = parsedState.level || 1;
-                    gameState.tasksCompleted = parsedState.tasksCompleted || 0;
-                    gameState.tasks = new Map();
-                    (parsedState.tasks || []).forEach(task => {
-                        if (task.id && !gameState.tasks.has(task.id)) {
-                            gameState.tasks.set(task.id, task);
-                        }
-                    });
+                const saved = localStorage.getItem('forestQuest');
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    gameState = {
+                        ...parsed,
+                        tasks: new Map(parsed.tasks || []),
+                        subjects: new Map(parsed.subjects || [['Physics', 0], ['Chemistry', 0], ['Math', 0]]),
+                        marks: parsed.marks || [],
+                        streak: parsed.streak || { current: 0, lastCompletionDate: null },
+                        dailyQuest: parsed.dailyQuest || { type: '', progress: 0, goal: 0, reward: 0 },
+                        multipliers: parsed.multipliers || [],
+                        achievements: parsed.achievements || [],
+                        schedule: parsed.schedule || [],
+                        pomodoro: parsed.pomodoro || { active: false, timeLeft: 0, break: false },
+                        notifications: parsed.notifications || []
+                    };
                 }
-                updateUI();
-                updateBackground();
-                renderTasks();
-                loadMarksData();
-
-                if (intervalId) {
-                    clearInterval(intervalId);
-                }
-                intervalId = setInterval(checkDeadlines, 60000);
+                checkDailyQuest();
             }
 
             function saveGameState() {
-                if (!currentUser) return;
-                const stateToSave = {
-                    coins: gameState.coins,
-                    level: gameState.level,
-                    tasksCompleted: gameState.tasksCompleted,
-                    tasks: Array.from(gameState.tasks.values())
+                const toSave = {
+                    ...gameState,
+                    tasks: Array.from(gameState.tasks.entries()),
+                    subjects: Array.from(gameState.subjects.entries())
                 };
-                localStorage.setItem(`forestQuestState_${currentUser}`, JSON.stringify(stateToSave));
+                localStorage.setItem('forestQuest', JSON.stringify(toSave));
             }
 
-            function updateUI() {
-                coinsElement.textContent = gameState.coins;
-                levelElement.textContent = gameState.level;
-                tasksCompletedElement.textContent = gameState.tasksCompleted;
-                const progress = (gameState.coins % 1000) / 10;
-                progressBarElement.style.width = `${progress}%`;
-            }
-
-            function updateBackground() {
-                if (document.body.classList.contains('starry-night')) {
-                    document.body.style.background = "url('https://static.vecteezy.com/system/resources/thumbnails/023/887/107/small/seamless-loop-galaxy-exploration-through-outer-space-towards-glowing-milky-way-galaxy-4k-looping-animation-of-flying-through-glowing-nebulae-clouds-and-stars-field-elements-free-video.jpg') no-repeat center center fixed";
-                    document.body.style.backgroundSize = 'cover';
-                } else {
-                    document.body.style.backgroundImage = `url('${backgroundImages[gameState.level > 5 ? 5 : gameState.level]}')`;
-                }
-            }
-
+            // **Utility Functions**
             function generateTaskId() {
-                return Date.now().toString(36) + Math.random().toString(36).substr(2);
-            }
-
-            function formatDateTime(date) {
-                return new Date(date).toLocaleString(undefined, {
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
-            }
-
-            function isUrgent(deadline) {
-                const now = new Date();
-                const deadlineDate = new Date(deadline);
-                return (deadlineDate - now) < 3600000 && (deadlineDate - now) > 0;
-            }
-
-            function isPastDeadline(deadline) {
-                const now = new Date();
-                const deadlineDate = new Date(deadline);
-                return now > deadlineDate;
-            }
-
-            function calculateTaskProgress(deadline, created) {
-                const now = new Date().getTime();
-                const deadlineDate = new Date(deadline).getTime();
-                const createdDate = new Date(created).getTime();
-                
-                const totalDuration = deadlineDate - createdDate;
-                const elapsed = now - createdDate;
-                const progress = (totalDuration - (deadlineDate - now)) / totalDuration * 100;
-                
-                if (deadlineDate < now) return 100;
-                if (totalDuration <= 0) return 0;
-                
-                return Math.max(0, Math.min(100, progress));
-            }
-
-            function renderTasks() {
-                if (gameState.tasks.size === 0) {
-                    emptyTasksElement.style.display = 'block';
-                } else {
-                    emptyTasksElement.style.display = 'none';
-                }
-
-                while (taskListElement.firstChild) {
-                    if (taskListElement.firstChild !== emptyTasksElement) {
-                        taskListElement.removeChild(taskListElement.firstChild);
-                    } else {
-                        break;
-                    }
-                }
-
-                const sortedTasks = Array.from(gameState.tasks.values()).sort((a, b) => {
-                    return new Date(a.deadline) - new Date(b.deadline);
-                });
-
-                sortedTasks.forEach(task => {
-                    if (!taskListElement.querySelector(`[data-id="${task.id}"]`)) {
-                        const taskItem = document.createElement('li');
-                        taskItem.className = 'task-item';
-                        taskItem.dataset.id = task.id;
-                        if (isPastDeadline(task.deadline)) {
-                            taskItem.classList.add('overdue');
-                        }
-
-                        const deadlineClass = isUrgent(task.deadline) ? 'urgent' : '';
-                        const isPast = isPastDeadline(task.deadline);
-                        const progress = calculateTaskProgress(task.deadline, task.created);
-
-                        taskItem.innerHTML = `
-                            <div class="task-details">
-                                <div class="task-name">${task.name}</div>
-                                <div class="task-deadline ${deadlineClass}">
-                                    ${isPast ? '⚠️ OVERDUE: ' : ''}Due: ${formatDateTime(task.deadline)}
-                                </div>
-                                <div class="task-progress">
-                                    <div class="task-progress-bar" style="width: ${progress}%"></div>
-                                </div>
-                            </div>
-                            <div class="task-actions">
-                                <button class="complete-btn">✓ Complete</button>
-                                <button class="delete-btn">Delete</button>
-                            </div>
-                        `;
-
-                        taskListElement.appendChild(taskItem);
-
-                        const completeBtn = taskItem.querySelector('.complete-btn');
-                        const deleteBtn = taskItem.querySelector('.delete-btn');
-
-                        completeBtn.addEventListener('click', () => completeTask(task.id));
-                        deleteBtn.addEventListener('click', () => deleteTask(task.id));
-                    }
-                });
-            }
-
-            function addTask(name, deadline) {
-                const id = generateTaskId();
-                if (gameState.tasks.has(id)) return;
-
-                const taskExists = Array.from(gameState.tasks.values()).some(task => 
-                    task.name === name && task.deadline === deadline
-                );
-                if (taskExists) return;
-
-                const newTask = {
-                    id: id,
-                    name: name,
-                    deadline: deadline,
-                    created: new Date().toISOString()
-                };
-
-                gameState.tasks.set(id, newTask);
-                saveGameState();
-                renderTasks();
-            }
-
-            function completeTask(taskId) {
-                if (!gameState.tasks.has(taskId)) return;
-
-                gameState.tasks.delete(taskId);
-                addCoins(100);
-                gameState.tasksCompleted++;
-
-                saveGameState();
-                renderTasks();
-                updateUI();
-            }
-
-            function deleteTask(taskId) {
-                if (!gameState.tasks.has(taskId)) return;
-
-                gameState.tasks.delete(taskId);
-                saveGameState();
-                renderTasks();
+                return 'task_' + Math.random().toString(36).substr(2, 9);
             }
 
             function addCoins(amount) {
-                gameState.coins += amount;
-                coinsElement.classList.add('coin-animation');
-                
-                const previousLevel = gameState.level;
-                gameState.level = Math.floor(gameState.coins / 1000) + 1;
-                
-                if (gameState.level > previousLevel) {
-                    showLevelUp(gameState.level);
-                }
-                
-                setTimeout(() => {
-                    coinsElement.classList.remove('coin-animation');
-                }, 500);
-                saveGameState();
-                updateUI();
-            }
-
-            function removeCoins(amount) {
-                gameState.coins = Math.max(0, gameState.coins - amount);
-                saveGameState();
-                updateUI();
-            }
-
-            function showLevelUp(newLevel) {
-                newLevelElement.textContent = newLevel;
-                levelUpPopup.style.display = 'block';
-                updateBackground();
-            }
-
-            function checkDeadlines() {
-                let penalty = false;
-                
-                for (let [id, task] of gameState.tasks) {
-                    if (isPastDeadline(task.deadline)) {
-                        penalty = true;
-                    }
-                }
-                
-                if (penalty) {
-                    removeCoins(50);
-                    updateUI();
-                }
-                
-                renderTasks();
-            }
-
-            function showDeleteButton(index) {
-                const existingButton = document.querySelector('.delete-graph-point');
-                if (existingButton) existingButton.remove();
-
-                const deleteBtn = document.createElement('button');
-                deleteBtn.textContent = 'Delete Point';
-                deleteBtn.className = 'delete-graph-point';
-                deleteBtn.style.position = 'absolute';
-                deleteBtn.style.backgroundColor = 'var(--delete-color)';
-                deleteBtn.style.padding = '0.5rem 1rem';
-                deleteBtn.style.border = 'none';
-                deleteBtn.style.borderRadius = '5px';
-                deleteBtn.style.cursor = 'pointer';
-                deleteBtn.style.zIndex = '104';
-
-                const canvas = document.getElementById('marksGraph');
-                const rect = canvas.getBoundingClientRect();
-                const x = marksChart.getDatasetMeta(0).data[index].x + rect.left;
-                const y = marksChart.getDatasetMeta(0).data[index].y + rect.top;
-                deleteBtn.style.left = `${x}px`;
-                deleteBtn.style.top = `${y - 40}px`;
-
-                deleteBtn.addEventListener('click', () => {
-                    marksData.labels.splice(index, 1);
-                    marksData.datasets[0].data.splice(index, 1);
-                    marksChart.update();
-                    saveMarksData();
-                    deleteBtn.remove();
+                let multiplier = 1 + (gameState.prestige * 0.1);
+                gameState.multipliers.forEach(m => {
+                    if (Date.now() < m.expires) multiplier *= m.multiplier;
                 });
+                gameState.coins += amount * multiplier;
+                if (gameState.coins >= gameState.level * 100) levelUp();
+                saveGameState();
+                updateUI();
+            }
 
-                document.body.appendChild(deleteBtn);
-
-                document.addEventListener('click', function handler(e) {
-                    if (!deleteBtn.contains(e.target) && e.target !== canvas) {
-                        deleteBtn.remove();
-                        document.removeEventListener('click', handler);
+            function levelUp() {
+                gameState.level++;
+                if (gameState.level >= 10) {
+                    if (confirm('Prestige? Reset for a 10% coin bonus.')) {
+                        gameState.coins = 0;
+                        gameState.level = 1;
+                        gameState.prestige++;
+                        gameState.tasks.clear();
                     }
-                }, { once: true });
+                }
+                addNotification('Level Up! You are now Level ' + gameState.level);
             }
 
-            document.addEventListener('keydown', (e) => {
-                if (e.key.toLowerCase() === 'o') {
-                    toggleStarryNight();
-                }
-                if (e.key.toLowerCase() === 't') {
-                    graphSidebar.classList.toggle('open');
-                    const existingButton = document.querySelector('.delete-graph-point');
-                    if (existingButton) existingButton.remove();
-                }
-                if (e.key.toLowerCase() === 'p') {
-                    schedulePopup.style.display = schedulePopup.style.display === 'block' ? 'none' : 'block';
-                }
-            });
+            // **UI Update**
+            function updateUI() {
+                document.getElementById('level').textContent = gameState.level;
+                document.getElementById('coins').textContent = Math.floor(gameState.coins);
+                document.getElementById('tasks-completed').textContent = gameState.tasksCompleted;
+                document.getElementById('streak').textContent = gameState.streak.current + ' days';
+                document.getElementById('daily-quest').textContent = gameState.dailyQuest.type || 'None';
+                document.getElementById('dashboard-level').textContent = gameState.level;
+                document.getElementById('dashboard-coins').textContent = Math.floor(gameState.coins);
+                document.getElementById('dashboard-tasks').textContent = gameState.tasks.size;
+                document.getElementById('dashboard-streak').textContent = gameState.streak.current + ' days';
+                renderTasks();
+                renderTargets();
+                renderSchedule();
+                renderAchievements();
+                renderGraph();
+                renderNotifications();
+            }
 
-            addMarksBtn.addEventListener('click', () => {
-                marksInputPopup.style.display = 'block';
-                marksInput.value = '';
-                document.getElementById('marks-name').value = '';
-            });
-
-            submitMarksBtn.addEventListener('click', () => {
-                const marks = parseInt(marksInput.value);
-                const testName = document.getElementById('marks-name').value.trim() || new Date().toLocaleDateString();
-                if (marks >= 0 && marks <= 300) {
-                    marksData.labels.push(testName);
-                    marksData.datasets[0].data.push(marks);
-                    marksChart.update();
-                    saveMarksData();
-                    marksInputPopup.style.display = 'none';
-                    document.getElementById('marks-name').value = '';
-                    marksInput.value = '';
-                } else {
-                    alert('Please enter marks between 0 and 300');
-                }
-            });
-
-            cancelMarksBtn.addEventListener('click', () => {
-                marksInputPopup.style.display = 'none';
-                document.getElementById('marks-name').value = '';
-                marksInput.value = '';
-            });
-
-            targetsBtn.addEventListener('click', () => {
-                targetsPopup.style.display = 'block';
-            });
-
-            targetsClose.addEventListener('click', () => {
-                targetsPopup.style.display = 'none';
-            });
-
-            scheduleClose.addEventListener('click', () => {
-                schedulePopup.style.display = 'none';
-            });
-
-            document.querySelectorAll('.progress-input').forEach(input => {
-                input.addEventListener('input', handleProgressInput);
-                input.addEventListener('blur', handleProgressInput);
-            });
-
-            addTaskForm.addEventListener('submit', function(e) {
+            // **Tasks and Deadlines**
+            document.getElementById('add-task-form').addEventListener('submit', e => {
                 e.preventDefault();
-                
-                const name = taskNameInput.value.trim();
-                const deadlineDate = deadlineDateInput.value;
-                const deadlineTime = deadlineTimeInput.value;
-                
-                if (!name || !deadlineDate || !deadlineTime) return;
-                
-                const deadline = new Date(`${deadlineDate}T${deadlineTime}`).toISOString();
-                
-                addTask(name, deadline);
-                
-                taskNameInput.value = '';
-                
-                const tomorrow = new Date();
-                tomorrow.setDate(tomorrow.getDate() + 1);
-                deadlineDateInput.value = tomorrow.toISOString().split('T')[0];
+                const name = document.getElementById('task-name').value;
+                const deadline = document.getElementById('task-deadline').value;
+                const difficulty = document.getElementById('task-difficulty').value;
+                const coinReward = { easy: 50, medium: 100, hard: 150 }[difficulty];
+                const id = generateTaskId();
+                gameState.tasks.set(id, { id, name, deadline, difficulty, coinReward, created: new Date().toISOString() });
+                document.getElementById('add-task-form').reset();
+                saveGameState();
+                updateUI();
             });
 
-            levelUpOkButton.addEventListener('click', function() {
-                levelUpPopup.style.display = 'none';
-            });
-
-            const today = new Date();
-            deadlineDateInput.value = today.toISOString().split('T')[0];
-            deadlineTimeInput.value = '23:59';
-
-            const signedInUser = loadSignedInUser();
-            if (signedInUser) {
-                currentUser = signedInUser;
-                signinOverlay.style.display = 'none';
-                mainContent.classList.remove('blur');
-                signoutBtn.style.display = 'block';
-                loadGameState();
-                loadSubjectProgress();
-                loadMarksData();
-            } else {
-                mainContent.classList.add('blur');
-                signinOverlay.style.display = 'flex';
+            function renderTasks() {
+                const ul = document.getElementById('tasks');
+                ul.innerHTML = '';
+                gameState.tasks.forEach(task => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `${task.name} (Due: ${new Date(task.deadline).toLocaleString()}, Difficulty: ${task.difficulty}) <button data-id="${task.id}">Complete</button>`;
+                    ul.appendChild(li);
+                });
+                ul.querySelectorAll('button').forEach(btn => {
+                    btn.addEventListener('click', () => completeTask(btn.dataset.id));
+                });
             }
 
-            window.addEventListener('beforeunload', () => {
-                if (intervalId) {
-                    clearInterval(intervalId);
+            function completeTask(taskId) {
+                const task = gameState.tasks.get(taskId);
+                if (!task) return;
+                const now = new Date();
+                if (new Date(task.deadline) >= now) {
+                    const today = now.toDateString();
+                    if (gameState.streak.lastCompletionDate !== today) {
+                        const yesterday = new Date(now.setDate(now.getDate() - 1)).toDateString();
+                        if (gameState.streak.lastCompletionDate === yesterday) {
+                            gameState.streak.current++;
+                            if (gameState.streak.current % 5 === 0) addCoins(50);
+                        } else {
+                            gameState.streak.current = 1;
+                        }
+                        gameState.streak.lastCompletionDate = today;
+                    }
+                } else {
+                    gameState.streak.current = 0;
+                }
+                addCoins(task.coinReward);
+                gameState.tasksCompleted++;
+                gameState.tasks.delete(taskId);
+                updateDailyQuest(task);
+                scheduleTaskIntegration();
+                saveGameState();
+                updateUI();
+            }
+
+            function checkDailyQuest() {
+                if (!gameState.dailyQuest.type || new Date().toDateString() !== new Date(gameState.dailyQuest.date).toDateString()) {
+                    const quests = [
+                        { type: 'Complete 3 tasks today', goal: 3, reward: 100 },
+                        { type: 'Finish 2 hard tasks', goal: 2, reward: 150 }
+                    ];
+                    gameState.dailyQuest = { ...quests[Math.floor(Math.random() * quests.length)], progress: 0, date: new Date().toISOString() };
+                }
+            }
+
+            function updateDailyQuest(task) {
+                if (gameState.dailyQuest.type === 'Complete 3 tasks today') {
+                    gameState.dailyQuest.progress++;
+                    if (gameState.dailyQuest.progress >= gameState.dailyQuest.goal) {
+                        addCoins(gameState.dailyQuest.reward);
+                        gameState.dailyQuest.type = '';
+                        addNotification('Daily Quest Completed!');
+                    }
+                } else if (gameState.dailyQuest.type === 'Finish 2 hard tasks' && task.difficulty === 'hard') {
+                    gameState.dailyQuest.progress++;
+                    if (gameState.dailyQuest.progress >= gameState.dailyQuest.goal) {
+                        addCoins(gameState.dailyQuest.reward);
+                        gameState.dailyQuest.type = '';
+                        addNotification('Daily Quest Completed!');
+                    }
+                }
+                saveGameState();
+            }
+
+            // **Shop**
+            document.querySelectorAll('.buy-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const item = btn.dataset.item;
+                    const cost = item === 'tree' ? 500 : 300;
+                    if (gameState.coins >= cost) {
+                        gameState.coins -= cost;
+                        document.body.style.backgroundImage = `url('${item}.jpg')`;
+                        addNotification(`Purchased ${item}!`);
+                        if (item === 'bird') {
+                            gameState.multipliers.push({ multiplier: 2, expires: Date.now() + 24 * 60 * 60 * 1000 });
+                        }
+                        saveGameState();
+                        updateUI();
+                    } else {
+                        addNotification('Not enough coins!');
+                    }
+                });
+            });
+
+            // **Achievements**
+            function checkAchievements() {
+                gameState.subjects.forEach((progress, subject) => {
+                    if (progress >= 80 && !gameState.achievements.includes(`${subject} Master`)) {
+                        gameState.achievements.push(`${subject} Master`);
+                        addCoins(100);
+                        addNotification(`Achievement Unlocked: ${subject} Master!`);
+                    }
+                });
+            }
+
+            function renderAchievements() {
+                const list = document.getElementById('achievement-list');
+                list.innerHTML = '';
+                gameState.achievements.forEach(achievement => {
+                    const div = document.createElement('div');
+                    div.textContent = achievement;
+                    list.appendChild(div);
+                });
+            }
+
+            // **Subject Progress**
+            function renderTargets() {
+                const tbody = document.getElementById('targets-body');
+                tbody.innerHTML = '';
+                gameState.subjects.forEach((progress, subject) => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${subject}</td>
+                        <td>${progress}%</td>
+                        <td><button data-subject="${subject}">Start Challenge</button></td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+                tbody.querySelectorAll('button').forEach(btn => {
+                    btn.addEventListener('click', () => startTopicChallenge(btn.dataset.subject));
+                });
+            }
+
+            function startTopicChallenge(subject) {
+                const taskId = generateTaskId();
+                gameState.tasks.set(taskId, {
+                    id: taskId,
+                    name: `Solve 10 ${subject} questions`,
+                    deadline: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+                    difficulty: 'medium',
+                    coinReward: 20,
+                    created: new Date().toISOString(),
+                    subjectBoost: subject
+                });
+                addNotification(`Topic Challenge Started: ${subject}`);
+                saveGameState();
+                updateUI();
+            }
+
+            document.getElementById('toggle-knowledge-tree').addEventListener('click', () => {
+                const table = document.getElementById('targets-table');
+                const canvas = document.getElementById('knowledge-tree');
+                if (table.style.display !== 'none') {
+                    table.style.display = 'none';
+                    canvas.style.display = 'block';
+                    drawKnowledgeTree();
+                } else {
+                    table.style.display = 'table';
+                    canvas.style.display = 'none';
                 }
             });
+
+            function drawKnowledgeTree() {
+                const canvas = document.getElementById('knowledge-tree');
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.beginPath();
+                ctx.moveTo(canvas.width / 2, canvas.height);
+                ctx.lineTo(canvas.width / 2, canvas.height / 2);
+                let i = 0;
+                gameState.subjects.forEach((progress, subject) => {
+                    const angle = (i * Math.PI / 3) - Math.PI / 2;
+                    const x = canvas.width / 2 + Math.cos(angle) * 100;
+                    const y = canvas.height / 2 + Math.sin(angle) * 100;
+                    ctx.moveTo(canvas.width / 2, canvas.height / 2);
+                    ctx.lineTo(x, y);
+                    ctx.fillStyle = progress >= 80 ? 'green' : 'gray';
+                    ctx.beginPath();
+                    ctx.arc(x, y, 10, 0, 2 * Math.PI);
+                    ctx.fill();
+                    ctx.fillStyle = 'black';
+                    ctx.fillText(subject, x - 20, y - 15);
+                    i++;
+                });
+                ctx.stroke();
+            }
+
+            // **Test Marks Graph**
+            document.getElementById('add-mark-form').addEventListener('submit', e => {
+                e.preventDefault();
+                const score = parseInt(document.getElementById('test-mark').value);
+                const total = parseInt(document.getElementById('test-total').value);
+                gameState.marks.push({ score, total, date: new Date().toISOString() });
+                if (gameState.goalScore && score >= gameState.goalScore) {
+                    addCoins(200);
+                    gameState.achievements.push('Goal Achiever');
+                    addNotification('Goal Achieved!');
+                    gameState.goalScore = null;
+                }
+                if (gameState.marks.length >= 3) checkGraphBadges();
+                document.getElementById('add-mark-form').reset();
+                saveGameState();
+                updateUI();
+            });
+
+            document.getElementById('set-goal').addEventListener('click', () => {
+                gameState.goalScore = parseInt(document.getElementById('goal-score').value);
+                addNotification(`Goal Set: ${gameState.goalScore}`);
+                saveGameState();
+                updateUI();
+            });
+
+            function renderGraph() {
+                const canvas = document.getElementById('marks-graph');
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                if (gameState.marks.length === 0) return;
+                const maxScore = Math.max(...gameState.marks.map(m => m.total));
+                const stepX = canvas.width / (gameState.marks.length - 1 || 1);
+                ctx.beginPath();
+                ctx.moveTo(0, canvas.height - (gameState.marks[0].score / maxScore) * canvas.height);
+                gameState.marks.forEach((mark, i) => {
+                    const y = canvas.height - (mark.score / maxScore) * canvas.height;
+                    ctx.lineTo(i * stepX, y);
+                });
+                ctx.strokeStyle = 'blue';
+                ctx.stroke();
+                if (gameState.marks.length > 1) {
+                    const avg = gameState.marks.reduce((sum, m) => sum + m.score / m.total, 0) / gameState.marks.length;
+                    document.getElementById('score-prediction').textContent = Math.round(avg * maxScore);
+                }
+            }
+
+            function checkGraphBadges() {
+                const lastThree = gameState.marks.slice(-3);
+                if (lastThree.length === 3 && lastThree[0].score < lastThree[1].score && lastThree[1].score < lastThree[2].score) {
+                    if (!gameState.achievements.includes('Rising Star')) {
+                        gameState.achievements.push('Rising Star');
+                        addCoins(50);
+                        addNotification('Achievement Unlocked: Rising Star!');
+                    }
+                }
+            }
+
+            // **Schedule**
+            document.getElementById('add-schedule-form').addEventListener('submit', e => {
+                e.preventDefault();
+                const time = document.getElementById('schedule-time').value;
+                const activity = document.getElementById('schedule-activity').value;
+                const duration = parseInt(document.getElementById('schedule-duration').value);
+                gameState.schedule.push({ time, activity, duration });
+                document.getElementById('add-schedule-form').reset();
+                scheduleTaskIntegration();
+                saveGameState();
+                updateUI();
+            });
+
+            function renderSchedule() {
+                const tbody = document.getElementById('schedule-body');
+                tbody.innerHTML = '';
+                gameState.schedule.forEach((block, i) => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${block.time}</td>
+                        <td>${block.activity}</td>
+                        <td>${block.duration} min</td>
+                        <td><button data-index="${i}">Complete</button></td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+                tbody.querySelectorAll('button').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const i = parseInt(btn.dataset.index);
+                        addCoins(10);
+                        gameState.schedule.splice(i, 1);
+                        saveGameState();
+                        updateUI();
+                    });
+                });
+            }
+
+            function scheduleTaskIntegration() {
+                gameState.tasks.forEach(task => {
+                    if (!task.scheduled) {
+                        const duration = { easy: 30, medium: 60, hard: 90 }[task.difficulty];
+                        gameState.schedule.push({ time: new Date(task.deadline).toTimeString().slice(0, 5), activity: task.name, duration });
+                        task.scheduled = true;
+                    }
+                });
+            }
+
+            // **Pomodoro Timer**
+            let pomodoroInterval;
+            document.getElementById('start-pomodoro').addEventListener('click', () => {
+                if (gameState.pomodoro.active) return;
+                gameState.pomodoro.active = true;
+                gameState.pomodoro.timeLeft = 25 * 60;
+                gameState.pomodoro.break = false;
+                pomodoroInterval = setInterval(() => {
+                    gameState.pomodoro.timeLeft--;
+                    if (gameState.pomodoro.timeLeft <= 0) {
+                        clearInterval(pomodoroInterval);
+                        if (!gameState.pomodoro.break) {
+                            addCoins(20);
+                            gameState.pomodoro.timeLeft = 5 * 60;
+                            gameState.pomodoro.break = true;
+                            addNotification('Pomodoro Complete! Take a break.');
+                            pomodoroInterval = setInterval(() => {
+                                gameState.pomodoro.timeLeft--;
+                                if (gameState.pomodoro.timeLeft <= 0) {
+                                    clearInterval(pomodoroInterval);
+                                    gameState.pomodoro.active = false;
+                                    addNotification('Break Over!');
+                                }
+                                updatePomodoroDisplay();
+                            }, 1000);
+                        }
+                    }
+                    updatePomodoroDisplay();
+                }, 1000);
+            });
+
+            document.getElementById('stop-pomodoro').addEventListener('click', () => {
+                clearInterval(pomodoroInterval);
+                gameState.pomodoro.active = false;
+                updatePomodoroDisplay();
+            });
+
+            function updatePomodoroDisplay() {
+                const minutes = Math.floor(gameState.pomodoro.timeLeft / 60);
+                const seconds = gameState.pomodoro.timeLeft % 60;
+                document.getElementById('timer-display').textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+            }
+
+            // **Notifications**
+            function addNotification(message) {
+                gameState.notifications.push({ message, id: Date.now() });
+                setTimeout(() => {
+                    gameState.notifications = gameState.notifications.filter(n => n.id !== Date.now());
+                    renderNotifications();
+                }, 5000);
+                renderNotifications();
+            }
+
+            function renderNotifications() {
+                const div = document.getElementById('notifications');
+                div.innerHTML = '';
+                gameState.notifications.forEach(n => {
+                    const p = document.createElement('div');
+                    p.className = 'notification';
+                    p.textContent = n.message;
+                    div.appendChild(p);
+                });
+            }
+
+            // **Analytics**
+            function getAnalytics() {
+                const weakSubject = Array.from(gameState.subjects.entries()).sort((a, b) => a[1] - b[1])[0];
+                addNotification(`Focus on ${weakSubject[0]} (Progress: ${weakSubject[1]}%)`);
+            }
+
+            // **Initialization and Event Listeners**
+            loadGameState();
+            updateUI();
+            setInterval(() => {
+                gameState.tasks.forEach(task => {
+                    if (new Date(task.deadline) < new Date()) {
+                        addNotification(`Task "${task.name}" is overdue!`);
+                    }
+                });
+                getAnalytics();
+            }, 60000);
+
+            document.getElementById('shop-btn').addEventListener('click', () => document.getElementById('shop').scrollIntoView());
+            document.getElementById('schedule-btn').addEventListener('click', () => {
+                document.getElementById('schedule-popup').style.display = 'block';
+                scheduleTaskIntegration();
+            });
+            document.getElementById('targets-btn').addEventListener('click', () => {
+                document.getElementById('targets-popup').style.display = 'block';
+            });
+            document.getElementById('close-schedule').addEventListener('click', () => document.getElementById('schedule-popup').style.display = 'none');
+            document.getElementById('close-targets').addEventListener('click', () => document.getElementById('targets-popup').style.display = 'none');
         });
     </script>
 </body>
