@@ -11,22 +11,20 @@
             font-family: Arial, sans-serif;
             color: #333;
             margin: 0;
-            padding: 0;
+            padding: 20px;
         }
 
         .container {
-            max-width: 1200px;
-            margin: 20px auto;
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 20px;
-        }
-
-        .dashboard, .stats, .add-task, .task-list, .shop, .achievements, .graph-sidebar {
+            max-width: 800px;
+            margin: 0 auto;
             background: rgba(255, 255, 255, 0.9);
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .stats, .add-task, .task-list, .shop {
+            margin-bottom: 20px;
         }
 
         .popup {
@@ -44,7 +42,7 @@
             margin: 50px auto;
             padding: 20px;
             width: 80%;
-            max-width: 600px;
+            max-width: 500px;
             border-radius: 10px;
         }
 
@@ -81,7 +79,7 @@
         }
 
         th, td {
-            padding: 10px;
+            padding: 8px;
             text-align: left;
             border-bottom: 1px solid #ddd;
         }
@@ -100,22 +98,21 @@
             margin: 5px 0;
             border-radius: 5px;
         }
+
+        .dashboard {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Dashboard -->
-        <div class="dashboard">
-            <h2>Dashboard</h2>
-            <p>Level: <span id="dashboard-level">1</span></p>
-            <p>Coins: <span id="dashboard-coins">0</span></p>
-            <p>Active Tasks: <span id="dashboard-tasks">0</span></p>
-            <p>Streak: <span id="dashboard-streak">0 days</span></p>
-            <button id="shop-btn">Shop</button>
-            <button id="schedule-btn">Schedule</button>
-            <button id="targets-btn">Targets</button>
-        </div>
-
         <!-- Stats -->
         <div class="stats">
             <h2>Stats</h2>
@@ -123,7 +120,8 @@
             <p>Coins: <span id="coins">0</span></p>
             <p>Tasks Completed: <span id="tasks-completed">0</span></p>
             <p>Streak: <span id="streak">0 days</span></p>
-            <p>Daily Quest: <span id="daily-quest">None</span></p>
+            <button id="targets-btn">View Targets</button>
+            <button id="schedule-btn">View Schedule</button>
         </div>
 
         <!-- Add Task -->
@@ -148,7 +146,7 @@
         </div>
 
         <!-- Shop -->
-        <div class="shop" id="shop">
+        <div class="shop">
             <h2>Shop</h2>
             <div class="shop-items">
                 <div class="shop-item">
@@ -164,10 +162,18 @@
             </div>
         </div>
 
-        <!-- Achievements -->
-        <div class="achievements" id="achievements">
-            <h2>Achievements</h2>
-            <div class="achievement-list" id="achievement-list"></div>
+        <!-- Test Marks Graph -->
+        <div class="graph">
+            <h2>Test Marks</h2>
+            <form id="add-mark-form">
+                <input type="number" id="test-mark" placeholder="Score" required>
+                <input type="number" id="test-total" placeholder="Total" required>
+                <button type="submit">Add Mark</button>
+            </form>
+            <input type="number" id="goal-score" placeholder="Set Goal Score">
+            <button id="set-goal">Set Goal</button>
+            <canvas id="marks-graph" width="300" height="200"></canvas>
+            <p>Prediction: <span id="score-prediction">N/A</span></p>
         </div>
 
         <!-- Targets Popup -->
@@ -220,516 +226,500 @@
                 <button class="close-btn" id="close-schedule">Close</button>
             </div>
         </div>
-
-        <!-- Test Marks Graph -->
-        <div class="graph-sidebar">
-            <h2>Test Marks</h2>
-            <form id="add-mark-form">
-                <input type="number" id="test-mark" placeholder="Score" required>
-                <input type="number" id="test-total" placeholder="Total" required>
-                <button type="submit">Add Mark</button>
-            </form>
-            <input type="number" id="goal-score" placeholder="Set Goal Score">
-            <button id="set-goal">Set Goal</button>
-            <canvas id="marks-graph" width="300" height="200"></canvas>
-            <p>Prediction: <span id="score-prediction">N/A</span></p>
-        </div>
     </div>
+
+    <!-- Dashboard (Toggles with 'Z') -->
+    <div class="dashboard" id="dashboard">
+        <h2>Dashboard</h2>
+        <p>Level: <span id="dashboard-level">1</span></p>
+        <p>Coins: <span id="dashboard-coins">0</span></p>
+        <p>Active Tasks: <span id="dashboard-tasks">0</span></p>
+        <p>Streak: <span id="dashboard-streak">0 days</span></p>
+        <button id="shop-link">Shop</button>
+        <button id="schedule-link">Schedule</button>
+        <button id="targets-link">Targets</button>
+    </div>
+
+    <!-- Notifications -->
     <div class="notifications" id="notifications"></div>
+
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // **Game State**
-            let gameState = {
-                coins: 0,
-                level: 1,
-                tasksCompleted: 0,
-                tasks: new Map(),
-                streak: { current: 0, lastCompletionDate: null },
-                dailyQuest: { type: '', progress: 0, goal: 0, reward: 0 },
-                prestige: 0,
-                multipliers: [],
-                achievements: [],
-                schedule: [],
-                pomodoro: { active: false, timeLeft: 0, break: false },
-                notifications: [],
-                subjects: new Map([['Physics', 0], ['Chemistry', 0], ['Math', 0]]),
-                marks: [],
-                goalScore: null
-            };
+        // Game State
+        let gameState = {
+            coins: 0,
+            level: 1,
+            tasksCompleted: 0,
+            tasks: new Map(),
+            streak: { current: 0, lastCompletionDate: null },
+            prestige: 0,
+            multipliers: [],
+            achievements: [],
+            schedule: [],
+            pomodoro: { active: false, timeLeft: 0, break: false },
+            notifications: [],
+            subjects: new Map([['Physics', 0], ['Chemistry', 0], ['Math', 0]]),
+            marks: [],
+            goalScore: null
+        };
 
-            // **Load and Save Game State**
-            function loadGameState() {
-                const saved = localStorage.getItem('forestQuest');
-                if (saved) {
-                    const parsed = JSON.parse(saved);
-                    gameState = {
-                        ...parsed,
-                        tasks: new Map(parsed.tasks || []),
-                        subjects: new Map(parsed.subjects || [['Physics', 0], ['Chemistry', 0], ['Math', 0]]),
-                        marks: parsed.marks || [],
-                        streak: parsed.streak || { current: 0, lastCompletionDate: null },
-                        dailyQuest: parsed.dailyQuest || { type: '', progress: 0, goal: 0, reward: 0 },
-                        multipliers: parsed.multipliers || [],
-                        achievements: parsed.achievements || [],
-                        schedule: parsed.schedule || [],
-                        pomodoro: parsed.pomodoro || { active: false, timeLeft: 0, break: false },
-                        notifications: parsed.notifications || []
-                    };
-                }
-                checkDailyQuest();
-            }
-
-            function saveGameState() {
-                const toSave = {
-                    ...gameState,
-                    tasks: Array.from(gameState.tasks.entries()),
-                    subjects: Array.from(gameState.subjects.entries())
+        // Load from localStorage
+        function loadGameState() {
+            const saved = localStorage.getItem('forestQuest');
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                gameState = {
+                    ...parsed,
+                    tasks: new Map(parsed.tasks || []),
+                    subjects: new Map(parsed.subjects || [['Physics', 0], ['Chemistry', 0], ['Math', 0]]),
+                    marks: parsed.marks || [],
+                    streak: parsed.streak || { current: 0, lastCompletionDate: null },
+                    multipliers: parsed.multipliers || [],
+                    achievements: parsed.achievements || [],
+                    schedule: parsed.schedule || [],
+                    pomodoro: parsed.pomodoro || { active: false, timeLeft: 0, break: false },
+                    notifications: parsed.notifications || []
                 };
-                localStorage.setItem('forestQuest', JSON.stringify(toSave));
             }
+        }
 
-            // **Utility Functions**
-            function generateTaskId() {
-                return 'task_' + Math.random().toString(36).substr(2, 9);
-            }
+        // Save to localStorage
+        function saveGameState() {
+            const toSave = {
+                ...gameState,
+                tasks: Array.from(gameState.tasks.entries()),
+                subjects: Array.from(gameState.subjects.entries())
+            };
+            localStorage.setItem('forestQuest', JSON.stringify(toSave));
+        }
 
-            function addCoins(amount) {
-                let multiplier = 1 + (gameState.prestige * 0.1);
-                gameState.multipliers.forEach(m => {
-                    if (Date.now() < m.expires) multiplier *= m.multiplier;
-                });
-                gameState.coins += amount * multiplier;
-                if (gameState.coins >= gameState.level * 100) levelUp();
-                saveGameState();
-                updateUI();
-            }
+        // Utility Functions
+        function generateTaskId() {
+            return 'task_' + Math.random().toString(36).substr(2, 9);
+        }
 
-            function levelUp() {
-                gameState.level++;
-                if (gameState.level >= 10) {
-                    if (confirm('Prestige? Reset for a 10% coin bonus.')) {
-                        gameState.coins = 0;
-                        gameState.level = 1;
-                        gameState.prestige++;
-                        gameState.tasks.clear();
-                    }
-                }
-                addNotification('Level Up! You are now Level ' + gameState.level);
-            }
-
-            // **UI Update**
-            function updateUI() {
-                document.getElementById('level').textContent = gameState.level;
-                document.getElementById('coins').textContent = Math.floor(gameState.coins);
-                document.getElementById('tasks-completed').textContent = gameState.tasksCompleted;
-                document.getElementById('streak').textContent = gameState.streak.current + ' days';
-                document.getElementById('daily-quest').textContent = gameState.dailyQuest.type || 'None';
-                document.getElementById('dashboard-level').textContent = gameState.level;
-                document.getElementById('dashboard-coins').textContent = Math.floor(gameState.coins);
-                document.getElementById('dashboard-tasks').textContent = gameState.tasks.size;
-                document.getElementById('dashboard-streak').textContent = gameState.streak.current + ' days';
-                renderTasks();
-                renderTargets();
-                renderSchedule();
-                renderAchievements();
-                renderGraph();
-                renderNotifications();
-            }
-
-            // **Tasks and Deadlines**
-            document.getElementById('add-task-form').addEventListener('submit', e => {
-                e.preventDefault();
-                const name = document.getElementById('task-name').value;
-                const deadline = document.getElementById('task-deadline').value;
-                const difficulty = document.getElementById('task-difficulty').value;
-                const coinReward = { easy: 50, medium: 100, hard: 150 }[difficulty];
-                const id = generateTaskId();
-                gameState.tasks.set(id, { id, name, deadline, difficulty, coinReward, created: new Date().toISOString() });
-                document.getElementById('add-task-form').reset();
-                saveGameState();
-                updateUI();
+        function addCoins(amount) {
+            let multiplier = 1 + (gameState.prestige * 0.1);
+            gameState.multipliers.forEach(m => {
+                if (Date.now() < m.expires) multiplier *= m.multiplier;
             });
-
-            function renderTasks() {
-                const ul = document.getElementById('tasks');
-                ul.innerHTML = '';
-                gameState.tasks.forEach(task => {
-                    const li = document.createElement('li');
-                    li.innerHTML = `${task.name} (Due: ${new Date(task.deadline).toLocaleString()}, Difficulty: ${task.difficulty}) <button data-id="${task.id}">Complete</button>`;
-                    ul.appendChild(li);
-                });
-                ul.querySelectorAll('button').forEach(btn => {
-                    btn.addEventListener('click', () => completeTask(btn.dataset.id));
-                });
-            }
-
-            function completeTask(taskId) {
-                const task = gameState.tasks.get(taskId);
-                if (!task) return;
-                const now = new Date();
-                if (new Date(task.deadline) >= now) {
-                    const today = now.toDateString();
-                    if (gameState.streak.lastCompletionDate !== today) {
-                        const yesterday = new Date(now.setDate(now.getDate() - 1)).toDateString();
-                        if (gameState.streak.lastCompletionDate === yesterday) {
-                            gameState.streak.current++;
-                            if (gameState.streak.current % 5 === 0) addCoins(50);
-                        } else {
-                            gameState.streak.current = 1;
-                        }
-                        gameState.streak.lastCompletionDate = today;
-                    }
-                } else {
-                    gameState.streak.current = 0;
-                }
-                addCoins(task.coinReward);
-                gameState.tasksCompleted++;
-                gameState.tasks.delete(taskId);
-                updateDailyQuest(task);
-                scheduleTaskIntegration();
-                saveGameState();
-                updateUI();
-            }
-
-            function checkDailyQuest() {
-                if (!gameState.dailyQuest.type || new Date().toDateString() !== new Date(gameState.dailyQuest.date).toDateString()) {
-                    const quests = [
-                        { type: 'Complete 3 tasks today', goal: 3, reward: 100 },
-                        { type: 'Finish 2 hard tasks', goal: 2, reward: 150 }
-                    ];
-                    gameState.dailyQuest = { ...quests[Math.floor(Math.random() * quests.length)], progress: 0, date: new Date().toISOString() };
-                }
-            }
-
-            function updateDailyQuest(task) {
-                if (gameState.dailyQuest.type === 'Complete 3 tasks today') {
-                    gameState.dailyQuest.progress++;
-                    if (gameState.dailyQuest.progress >= gameState.dailyQuest.goal) {
-                        addCoins(gameState.dailyQuest.reward);
-                        gameState.dailyQuest.type = '';
-                        addNotification('Daily Quest Completed!');
-                    }
-                } else if (gameState.dailyQuest.type === 'Finish 2 hard tasks' && task.difficulty === 'hard') {
-                    gameState.dailyQuest.progress++;
-                    if (gameState.dailyQuest.progress >= gameState.dailyQuest.goal) {
-                        addCoins(gameState.dailyQuest.reward);
-                        gameState.dailyQuest.type = '';
-                        addNotification('Daily Quest Completed!');
-                    }
-                }
-                saveGameState();
-            }
-
-            // **Shop**
-            document.querySelectorAll('.buy-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const item = btn.dataset.item;
-                    const cost = item === 'tree' ? 500 : 300;
-                    if (gameState.coins >= cost) {
-                        gameState.coins -= cost;
-                        document.body.style.backgroundImage = `url('${item}.jpg')`;
-                        addNotification(`Purchased ${item}!`);
-                        if (item === 'bird') {
-                            gameState.multipliers.push({ multiplier: 2, expires: Date.now() + 24 * 60 * 60 * 1000 });
-                        }
-                        saveGameState();
-                        updateUI();
-                    } else {
-                        addNotification('Not enough coins!');
-                    }
-                });
-            });
-
-            // **Achievements**
-            function checkAchievements() {
-                gameState.subjects.forEach((progress, subject) => {
-                    if (progress >= 80 && !gameState.achievements.includes(`${subject} Master`)) {
-                        gameState.achievements.push(`${subject} Master`);
-                        addCoins(100);
-                        addNotification(`Achievement Unlocked: ${subject} Master!`);
-                    }
-                });
-            }
-
-            function renderAchievements() {
-                const list = document.getElementById('achievement-list');
-                list.innerHTML = '';
-                gameState.achievements.forEach(achievement => {
-                    const div = document.createElement('div');
-                    div.textContent = achievement;
-                    list.appendChild(div);
-                });
-            }
-
-            // **Subject Progress**
-            function renderTargets() {
-                const tbody = document.getElementById('targets-body');
-                tbody.innerHTML = '';
-                gameState.subjects.forEach((progress, subject) => {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td>${subject}</td>
-                        <td>${progress}%</td>
-                        <td><button data-subject="${subject}">Start Challenge</button></td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-                tbody.querySelectorAll('button').forEach(btn => {
-                    btn.addEventListener('click', () => startTopicChallenge(btn.dataset.subject));
-                });
-            }
-
-            function startTopicChallenge(subject) {
-                const taskId = generateTaskId();
-                gameState.tasks.set(taskId, {
-                    id: taskId,
-                    name: `Solve 10 ${subject} questions`,
-                    deadline: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-                    difficulty: 'medium',
-                    coinReward: 20,
-                    created: new Date().toISOString(),
-                    subjectBoost: subject
-                });
-                addNotification(`Topic Challenge Started: ${subject}`);
-                saveGameState();
-                updateUI();
-            }
-
-            document.getElementById('toggle-knowledge-tree').addEventListener('click', () => {
-                const table = document.getElementById('targets-table');
-                const canvas = document.getElementById('knowledge-tree');
-                if (table.style.display !== 'none') {
-                    table.style.display = 'none';
-                    canvas.style.display = 'block';
-                    drawKnowledgeTree();
-                } else {
-                    table.style.display = 'table';
-                    canvas.style.display = 'none';
-                }
-            });
-
-            function drawKnowledgeTree() {
-                const canvas = document.getElementById('knowledge-tree');
-                const ctx = canvas.getContext('2d');
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.beginPath();
-                ctx.moveTo(canvas.width / 2, canvas.height);
-                ctx.lineTo(canvas.width / 2, canvas.height / 2);
-                let i = 0;
-                gameState.subjects.forEach((progress, subject) => {
-                    const angle = (i * Math.PI / 3) - Math.PI / 2;
-                    const x = canvas.width / 2 + Math.cos(angle) * 100;
-                    const y = canvas.height / 2 + Math.sin(angle) * 100;
-                    ctx.moveTo(canvas.width / 2, canvas.height / 2);
-                    ctx.lineTo(x, y);
-                    ctx.fillStyle = progress >= 80 ? 'green' : 'gray';
-                    ctx.beginPath();
-                    ctx.arc(x, y, 10, 0, 2 * Math.PI);
-                    ctx.fill();
-                    ctx.fillStyle = 'black';
-                    ctx.fillText(subject, x - 20, y - 15);
-                    i++;
-                });
-                ctx.stroke();
-            }
-
-            // **Test Marks Graph**
-            document.getElementById('add-mark-form').addEventListener('submit', e => {
-                e.preventDefault();
-                const score = parseInt(document.getElementById('test-mark').value);
-                const total = parseInt(document.getElementById('test-total').value);
-                gameState.marks.push({ score, total, date: new Date().toISOString() });
-                if (gameState.goalScore && score >= gameState.goalScore) {
-                    addCoins(200);
-                    gameState.achievements.push('Goal Achiever');
-                    addNotification('Goal Achieved!');
-                    gameState.goalScore = null;
-                }
-                if (gameState.marks.length >= 3) checkGraphBadges();
-                document.getElementById('add-mark-form').reset();
-                saveGameState();
-                updateUI();
-            });
-
-            document.getElementById('set-goal').addEventListener('click', () => {
-                gameState.goalScore = parseInt(document.getElementById('goal-score').value);
-                addNotification(`Goal Set: ${gameState.goalScore}`);
-                saveGameState();
-                updateUI();
-            });
-
-            function renderGraph() {
-                const canvas = document.getElementById('marks-graph');
-                const ctx = canvas.getContext('2d');
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                if (gameState.marks.length === 0) return;
-                const maxScore = Math.max(...gameState.marks.map(m => m.total));
-                const stepX = canvas.width / (gameState.marks.length - 1 || 1);
-                ctx.beginPath();
-                ctx.moveTo(0, canvas.height - (gameState.marks[0].score / maxScore) * canvas.height);
-                gameState.marks.forEach((mark, i) => {
-                    const y = canvas.height - (mark.score / maxScore) * canvas.height;
-                    ctx.lineTo(i * stepX, y);
-                });
-                ctx.strokeStyle = 'blue';
-                ctx.stroke();
-                if (gameState.marks.length > 1) {
-                    const avg = gameState.marks.reduce((sum, m) => sum + m.score / m.total, 0) / gameState.marks.length;
-                    document.getElementById('score-prediction').textContent = Math.round(avg * maxScore);
-                }
-            }
-
-            function checkGraphBadges() {
-                const lastThree = gameState.marks.slice(-3);
-                if (lastThree.length === 3 && lastThree[0].score < lastThree[1].score && lastThree[1].score < lastThree[2].score) {
-                    if (!gameState.achievements.includes('Rising Star')) {
-                        gameState.achievements.push('Rising Star');
-                        addCoins(50);
-                        addNotification('Achievement Unlocked: Rising Star!');
-                    }
-                }
-            }
-
-            // **Schedule**
-            document.getElementById('add-schedule-form').addEventListener('submit', e => {
-                e.preventDefault();
-                const time = document.getElementById('schedule-time').value;
-                const activity = document.getElementById('schedule-activity').value;
-                const duration = parseInt(document.getElementById('schedule-duration').value);
-                gameState.schedule.push({ time, activity, duration });
-                document.getElementById('add-schedule-form').reset();
-                scheduleTaskIntegration();
-                saveGameState();
-                updateUI();
-            });
-
-            function renderSchedule() {
-                const tbody = document.getElementById('schedule-body');
-                tbody.innerHTML = '';
-                gameState.schedule.forEach((block, i) => {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td>${block.time}</td>
-                        <td>${block.activity}</td>
-                        <td>${block.duration} min</td>
-                        <td><button data-index="${i}">Complete</button></td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-                tbody.querySelectorAll('button').forEach(btn => {
-                    btn.addEventListener('click', () => {
-                        const i = parseInt(btn.dataset.index);
-                        addCoins(10);
-                        gameState.schedule.splice(i, 1);
-                        saveGameState();
-                        updateUI();
-                    });
-                });
-            }
-
-            function scheduleTaskIntegration() {
-                gameState.tasks.forEach(task => {
-                    if (!task.scheduled) {
-                        const duration = { easy: 30, medium: 60, hard: 90 }[task.difficulty];
-                        gameState.schedule.push({ time: new Date(task.deadline).toTimeString().slice(0, 5), activity: task.name, duration });
-                        task.scheduled = true;
-                    }
-                });
-            }
-
-            // **Pomodoro Timer**
-            let pomodoroInterval;
-            document.getElementById('start-pomodoro').addEventListener('click', () => {
-                if (gameState.pomodoro.active) return;
-                gameState.pomodoro.active = true;
-                gameState.pomodoro.timeLeft = 25 * 60;
-                gameState.pomodoro.break = false;
-                pomodoroInterval = setInterval(() => {
-                    gameState.pomodoro.timeLeft--;
-                    if (gameState.pomodoro.timeLeft <= 0) {
-                        clearInterval(pomodoroInterval);
-                        if (!gameState.pomodoro.break) {
-                            addCoins(20);
-                            gameState.pomodoro.timeLeft = 5 * 60;
-                            gameState.pomodoro.break = true;
-                            addNotification('Pomodoro Complete! Take a break.');
-                            pomodoroInterval = setInterval(() => {
-                                gameState.pomodoro.timeLeft--;
-                                if (gameState.pomodoro.timeLeft <= 0) {
-                                    clearInterval(pomodoroInterval);
-                                    gameState.pomodoro.active = false;
-                                    addNotification('Break Over!');
-                                }
-                                updatePomodoroDisplay();
-                            }, 1000);
-                        }
-                    }
-                    updatePomodoroDisplay();
-                }, 1000);
-            });
-
-            document.getElementById('stop-pomodoro').addEventListener('click', () => {
-                clearInterval(pomodoroInterval);
-                gameState.pomodoro.active = false;
-                updatePomodoroDisplay();
-            });
-
-            function updatePomodoroDisplay() {
-                const minutes = Math.floor(gameState.pomodoro.timeLeft / 60);
-                const seconds = gameState.pomodoro.timeLeft % 60;
-                document.getElementById('timer-display').textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-            }
-
-            // **Notifications**
-            function addNotification(message) {
-                gameState.notifications.push({ message, id: Date.now() });
-                setTimeout(() => {
-                    gameState.notifications = gameState.notifications.filter(n => n.id !== Date.now());
-                    renderNotifications();
-                }, 5000);
-                renderNotifications();
-            }
-
-            function renderNotifications() {
-                const div = document.getElementById('notifications');
-                div.innerHTML = '';
-                gameState.notifications.forEach(n => {
-                    const p = document.createElement('div');
-                    p.className = 'notification';
-                    p.textContent = n.message;
-                    div.appendChild(p);
-                });
-            }
-
-            // **Analytics**
-            function getAnalytics() {
-                const weakSubject = Array.from(gameState.subjects.entries()).sort((a, b) => a[1] - b[1])[0];
-                addNotification(`Focus on ${weakSubject[0]} (Progress: ${weakSubject[1]}%)`);
-            }
-
-            // **Initialization and Event Listeners**
-            loadGameState();
+            gameState.coins += amount * multiplier;
+            if (gameState.coins >= gameState.level * 100) levelUp();
+            saveGameState();
             updateUI();
-            setInterval(() => {
-                gameState.tasks.forEach(task => {
-                    if (new Date(task.deadline) < new Date()) {
-                        addNotification(`Task "${task.name}" is overdue!`);
-                    }
-                });
-                getAnalytics();
-            }, 60000);
+        }
 
-            document.getElementById('shop-btn').addEventListener('click', () => document.getElementById('shop').scrollIntoView());
-            document.getElementById('schedule-btn').addEventListener('click', () => {
-                document.getElementById('schedule-popup').style.display = 'block';
-                scheduleTaskIntegration();
-            });
-            document.getElementById('targets-btn').addEventListener('click', () => {
-                document.getElementById('targets-popup').style.display = 'block';
-            });
-            document.getElementById('close-schedule').addEventListener('click', () => document.getElementById('schedule-popup').style.display = 'none');
-            document.getElementById('close-targets').addEventListener('click', () => document.getElementById('targets-popup').style.display = 'none');
+        function levelUp() {
+            gameState.level++;
+            if (gameState.level >= 10) {
+                if (confirm('Prestige? Reset for a 10% coin bonus.')) {
+                    gameState.coins = 0;
+                    gameState.level = 1;
+                    gameState.prestige++;
+                    gameState.tasks.clear();
+                }
+            }
+            addNotification('Level Up! You are now Level ' + gameState.level);
+        }
+
+        // UI Updates
+        function updateUI() {
+            document.getElementById('level').textContent = gameState.level;
+            document.getElementById('coins').textContent = Math.floor(gameState.coins);
+            document.getElementById('tasks-completed').textContent = gameState.tasksCompleted;
+            document.getElementById('streak').textContent = gameState.streak.current + ' days';
+            document.getElementById('dashboard-level').textContent = gameState.level;
+            document.getElementById('dashboard-coins').textContent = Math.floor(gameState.coins);
+            document.getElementById('dashboard-tasks').textContent = gameState.tasks.size;
+            document.getElementById('dashboard-streak').textContent = gameState.streak.current + ' days';
+            renderTasks();
+            renderTargets();
+            renderSchedule();
+            renderGraph();
+            renderNotifications();
+        }
+
+        // Tasks and Deadlines
+        document.getElementById('add-task-form').addEventListener('submit', e => {
+            e.preventDefault();
+            const name = document.getElementById('task-name').value;
+            const deadline = document.getElementById('task-deadline').value;
+            const difficulty = document.getElementById('task-difficulty').value;
+            const coinReward = { easy: 50, medium: 100, hard: 150 }[difficulty];
+            const id = generateTaskId();
+            gameState.tasks.set(id, { id, name, deadline, difficulty, coinReward, created: new Date().toISOString() });
+            document.getElementById('add-task-form').reset();
+            saveGameState();
+            updateUI();
         });
+
+        function renderTasks() {
+            const ul = document.getElementById('tasks');
+            ul.innerHTML = '';
+            gameState.tasks.forEach(task => {
+                const li = document.createElement('li');
+                li.innerHTML = `${task.name} (Due: ${new Date(task.deadline).toLocaleString()}, Difficulty: ${task.difficulty}) <button data-id="${task.id}">Complete</button>`;
+                ul.appendChild(li);
+            });
+            ul.querySelectorAll('button').forEach(btn => {
+                btn.addEventListener('click', () => completeTask(btn.dataset.id));
+            });
+        }
+
+        function completeTask(taskId) {
+            const task = gameState.tasks.get(taskId);
+            if (!task) return;
+            const now = new Date();
+            if (new Date(task.deadline) >= now) {
+                const today = now.toDateString();
+                if (gameState.streak.lastCompletionDate !== today) {
+                    const yesterday = new Date(now.setDate(now.getDate() - 1)).toDateString();
+                    if (gameState.streak.lastCompletionDate === yesterday) {
+                        gameState.streak.current++;
+                        if (gameState.streak.current % 5 === 0) addCoins(50);
+                    } else {
+                        gameState.streak.current = 1;
+                    }
+                    gameState.streak.lastCompletionDate = today;
+                }
+            } else {
+                gameState.streak.current = 0;
+            }
+            addCoins(task.coinReward);
+            gameState.tasksCompleted++;
+            gameState.tasks.delete(taskId);
+            scheduleTaskIntegration();
+            saveGameState();
+            updateUI();
+        }
+
+        // Shop
+        document.querySelectorAll('.buy-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const item = btn.dataset.item;
+                const cost = item === 'tree' ? 500 : 300;
+                if (gameState.coins >= cost) {
+                    gameState.coins -= cost;
+                    document.body.style.backgroundImage = `url('${item}.jpg')`;
+                    addNotification(`Purchased ${item}!`);
+                    if (item === 'bird') {
+                        gameState.multipliers.push({ multiplier: 2, expires: Date.now() + 24 * 60 * 60 * 1000 });
+                    }
+                    saveGameState();
+                    updateUI();
+                } else {
+                    addNotification('Not enough coins!');
+                }
+            });
+        });
+
+        // Subject Progress
+        function renderTargets() {
+            const tbody = document.getElementById('targets-body');
+            tbody.innerHTML = '';
+            gameState.subjects.forEach((progress, subject) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${subject}</td>
+                    <td>${progress}%</td>
+                    <td><button data-subject="${subject}">Start Challenge</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+            tbody.querySelectorAll('button').forEach(btn => {
+                btn.addEventListener('click', () => startTopicChallenge(btn.dataset.subject));
+            });
+            checkAchievements();
+        }
+
+        function startTopicChallenge(subject) {
+            const taskId = generateTaskId();
+            gameState.tasks.set(taskId, {
+                id: taskId,
+                name: `Solve 10 ${subject} questions`,
+                deadline: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+                difficulty: 'medium',
+                coinReward: 20,
+                created: new Date().toISOString(),
+                subjectBoost: subject
+            });
+            addNotification(`Topic Challenge Started: ${subject}`);
+            saveGameState();
+            updateUI();
+        }
+
+        function checkAchievements() {
+            gameState.subjects.forEach((progress, subject) => {
+                if (progress >= 80 && !gameState.achievements.includes(`${subject} Master`)) {
+                    gameState.achievements.push(`${subject} Master`);
+                    addCoins(100);
+                    addNotification(`Achievement Unlocked: ${subject} Master!`);
+                }
+            });
+        }
+
+        document.getElementById('toggle-knowledge-tree').addEventListener('click', () => {
+            const table = document.getElementById('targets-table');
+            const canvas = document.getElementById('knowledge-tree');
+            if (table.style.display !== 'none') {
+                table.style.display = 'none';
+                canvas.style.display = 'block';
+                drawKnowledgeTree();
+            } else {
+                table.style.display = 'table';
+                canvas.style.display = 'none';
+            }
+        });
+
+        function drawKnowledgeTree() {
+            const canvas = document.getElementById('knowledge-tree');
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.beginPath();
+            ctx.moveTo(canvas.width / 2, canvas.height);
+            ctx.lineTo(canvas.width / 2, canvas.height / 2);
+            let i = 0;
+            gameState.subjects.forEach((progress, subject) => {
+                const angle = (i * Math.PI / 3) - Math.PI / 2;
+                const x = canvas.width / 2 + Math.cos(angle) * 100;
+                const y = canvas.height / 2 + Math.sin(angle) * 100;
+                ctx.moveTo(canvas.width / 2, canvas.height / 2);
+                ctx.lineTo(x, y);
+                ctx.fillStyle = progress >= 80 ? 'green' : 'gray';
+                ctx.beginPath();
+                ctx.arc(x, y, 10, 0, 2 * Math.PI);
+                ctx.fill();
+                ctx.fillStyle = 'black';
+                ctx.fillText(subject, x - 20, y - 15);
+                i++;
+            });
+            ctx.stroke();
+        }
+
+        // Test Marks Graph
+        document.getElementById('add-mark-form').addEventListener('submit', e => {
+            e.preventDefault();
+            const score = parseInt(document.getElementById('test-mark').value);
+            const total = parseInt(document.getElementById('test-total').value);
+            gameState.marks.push({ score, total, date: new Date().toISOString() });
+            if (gameState.goalScore && score >= gameState.goalScore) {
+                addCoins(200);
+                gameState.achievements.push('Goal Achiever');
+                addNotification('Goal Achieved!');
+                gameState.goalScore = null;
+            }
+            if (gameState.marks.length >= 3) checkGraphBadges();
+            document.getElementById('add-mark-form').reset();
+            saveGameState();
+            updateUI();
+        });
+
+        document.getElementById('set-goal').addEventListener('click', () => {
+            gameState.goalScore = parseInt(document.getElementById('goal-score').value);
+            addNotification(`Goal Set: ${gameState.goalScore}`);
+            saveGameState();
+            updateUI();
+        });
+
+        function renderGraph() {
+            const canvas = document.getElementById('marks-graph');
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if (gameState.marks.length === 0) return;
+            const maxScore = Math.max(...gameState.marks.map(m => m.total));
+            const stepX = canvas.width / (gameState.marks.length - 1 || 1);
+            ctx.beginPath();
+            ctx.moveTo(0, canvas.height - (gameState.marks[0].score / maxScore) * canvas.height);
+            gameState.marks.forEach((mark, i) => {
+                const y = canvas.height - (mark.score / maxScore) * canvas.height;
+                ctx.lineTo(i * stepX, y);
+            });
+            ctx.strokeStyle = 'blue';
+            ctx.stroke();
+            if (gameState.marks.length > 1) {
+                const avg = gameState.marks.reduce((sum, m) => sum + m.score / m.total, 0) / gameState.marks.length;
+                document.getElementById('score-prediction').textContent = Math.round(avg * maxScore);
+            }
+        }
+
+        function checkGraphBadges() {
+            const lastThree = gameState.marks.slice(-3);
+            if (lastThree.length === 3 && lastThree[0].score < lastThree[1].score && lastThree[1].score < lastThree[2].score) {
+                if (!gameState.achievements.includes('Rising Star')) {
+                    gameState.achievements.push('Rising Star');
+                    addCoins(50);
+                    addNotification('Achievement Unlocked: Rising Star!');
+                }
+            }
+        }
+
+        // Schedule
+        document.getElementById('add-schedule-form').addEventListener('submit', e => {
+            e.preventDefault();
+            const time = document.getElementById('schedule-time').value;
+            const activity = document.getElementById('schedule-activity').value;
+            const duration = parseInt(document.getElementById('schedule-duration').value);
+            gameState.schedule.push({ time, activity, duration });
+            document.getElementById('add-schedule-form').reset();
+            scheduleTaskIntegration();
+            saveGameState();
+            updateUI();
+        });
+
+        function renderSchedule() {
+            const tbody = document.getElementById('schedule-body');
+            tbody.innerHTML = '';
+            gameState.schedule.forEach((block, i) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${block.time}</td>
+                    <td>${block.activity}</td>
+                    <td>${block.duration} min</td>
+                    <td><button data-index="${i}">Complete</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+            tbody.querySelectorAll('button').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const i = parseInt(btn.dataset.index);
+                    addCoins(10);
+                    gameState.schedule.splice(i, 1);
+                    saveGameState();
+                    updateUI();
+                });
+            });
+        }
+
+        function scheduleTaskIntegration() {
+            gameState.tasks.forEach(task => {
+                if (!task.scheduled) {
+                    const duration = { easy: 30, medium: 60, hard: 90 }[task.difficulty];
+                    gameState.schedule.push({ time: new Date(task.deadline).toTimeString().slice(0, 5), activity: task.name, duration });
+                    task.scheduled = true;
+                }
+            });
+        }
+
+        // Pomodoro Timer
+        let pomodoroInterval;
+        document.getElementById('start-pomodoro').addEventListener('click', () => {
+            if (gameState.pomodoro.active) return;
+            gameState.pomodoro.active = true;
+            gameState.pomodoro.timeLeft = 25 * 60;
+            gameState.pomodoro.break = false;
+            pomodoroInterval = setInterval(() => {
+                gameState.pomodoro.timeLeft--;
+                if (gameState.pomodoro.timeLeft <= 0) {
+                    clearInterval(pomodoroInterval);
+                    if (!gameState.pomodoro.break) {
+                        addCoins(20);
+                        gameState.pomodoro.timeLeft = 5 * 60;
+                        gameState.pomodoro.break = true;
+                        addNotification('Pomodoro Complete! Take a break.');
+                        pomodoroInterval = setInterval(() => {
+                            gameState.pomodoro.timeLeft--;
+                            if (gameState.pomodoro.timeLeft <= 0) {
+                                clearInterval(pomodoroInterval);
+                                gameState.pomodoro.active = false;
+                                addNotification('Break Over!');
+                            }
+                            updatePomodoroDisplay();
+                        }, 1000);
+                    }
+                }
+                updatePomodoroDisplay();
+            }, 1000);
+        });
+
+        document.getElementById('stop-pomodoro').addEventListener('click', () => {
+            clearInterval(pomodoroInterval);
+            gameState.pomodoro.active = false;
+            updatePomodoroDisplay();
+        });
+
+        function updatePomodoroDisplay() {
+            const minutes = Math.floor(gameState.pomodoro.timeLeft / 60);
+            const seconds = gameState.pomodoro.timeLeft % 60;
+            document.getElementById('timer-display').textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+        }
+
+        // Notifications
+        function addNotification(message) {
+            gameState.notifications.push({ message, id: Date.now() });
+            setTimeout(() => {
+                gameState.notifications = gameState.notifications.filter(n => n.id !== Date.now());
+                renderNotifications();
+            }, 5000);
+            renderNotifications();
+        }
+
+        function renderNotifications() {
+            const div = document.getElementById('notifications');
+            div.innerHTML = '';
+            gameState.notifications.forEach(n => {
+                const p = document.createElement('div');
+                p.className = 'notification';
+                p.textContent = n.message;
+                div.appendChild(p);
+            });
+        }
+
+        // Analytics
+        function getAnalytics() {
+            const weakSubject = Array.from(gameState.subjects.entries()).sort((a, b) => a[1] - b[1])[0];
+            addNotification(`Focus on ${weakSubject[0]} (Progress: ${weakSubject[1]}%)`);
+        }
+
+        // Dashboard Toggle with 'Z'
+        let dashboardVisible = false;
+        document.addEventListener('keydown', (e) => {
+            if (e.key.toLowerCase() === 'z') {
+                dashboardVisible = !dashboardVisible;
+                document.getElementById('dashboard').style.display = dashboardVisible ? 'block' : 'none';
+            }
+        });
+
+        // Event Listeners
+        document.getElementById('targets-btn').addEventListener('click', () => {
+            document.getElementById('targets-popup').style.display = 'block';
+        });
+        document.getElementById('schedule-btn').addEventListener('click', () => {
+            document.getElementById('schedule-popup').style.display = 'block';
+            scheduleTaskIntegration();
+        });
+        document.getElementById('close-targets').addEventListener('click', () => {
+            document.getElementById('targets-popup').style.display = 'none';
+        });
+        document.getElementById('close-schedule').addEventListener('click', () => {
+            document.getElementById('schedule-popup').style.display = 'none';
+        });
+        document.getElementById('shop-link').addEventListener('click', () => {
+            document.getElementById('shop').scrollIntoView();
+            document.getElementById('dashboard').style.display = 'none';
+            dashboardVisible = false;
+        });
+        document.getElementById('schedule-link').addEventListener('click', () => {
+            document.getElementById('schedule-popup').style.display = 'block';
+            scheduleTaskIntegration();
+            document.getElementById('dashboard').style.display = 'none';
+            dashboardVisible = false;
+        });
+        document.getElementById('targets-link').addEventListener('click', () => {
+            document.getElementById('targets-popup').style.display = 'block';
+            document.getElementById('dashboard').style.display = 'none';
+            dashboardVisible = false;
+        });
+
+        // Initialize
+        loadGameState();
+        updateUI();
+        setInterval(() => {
+            gameState.tasks.forEach(task => {
+                if (new Date(task.deadline) < new Date()) {
+                    addNotification(`Task "${task.name}" is overdue!`);
+                }
+            });
+            getAnalytics();
+        }, 60000); // Check every minute
     </script>
 </body>
 </html>
